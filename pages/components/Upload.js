@@ -3,6 +3,8 @@ import { useState } from 'react';
 
 export default function Upload() {
   const [file, setFile] = useState(null);
+  const [password, setPassword] = useState('');
+  const [uploadUsePassword, setUploadUsePassword] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
@@ -21,13 +23,14 @@ export default function Upload() {
     };
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('password', password);
     setLoading(true);
     axios
       .post('/api/upload', formData, config)
       .then((res) => {
         setLoading(false);
         setSuccess(res.data);
-        console.log(res);
+        console.log(res.data);
       })
       .catch((err) => {
         setLoading(false);
@@ -38,6 +41,60 @@ export default function Upload() {
 
   function handleChange(e) {
     setFile(e.target.files[0]);
+  }
+
+  function handleUsePassword(e) {
+    if (e.target.checked) {
+      setUploadUsePassword(true);
+    } else {
+      setUploadUsePassword(false);
+    }
+  }
+
+  function Confirmation() {
+    if (success) {
+      return (
+        <div className="flex flex-col items-center justify-center">
+          <div className="border-solid border-2 border-sky-500 w-fit p-2">
+            <h3>Success!</h3>
+            <p>
+              <strong>File:</strong> {success.file}
+            </p>
+            <p>
+              <strong>Size:</strong> {success.size}
+            </p>
+            <p>
+              <strong>Key:</strong> {success.key}
+            </p>
+            <p>
+              <strong>Password:</strong> {success.password}
+            </p>
+            <p>
+              <strong>Delete after download?:</strong> {success.dad}
+            </p>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  function UploadPasswordFill() {
+    if (uploadUsePassword) {
+      return (
+        <div className="flex flex-col items-center justify-center">
+          <div className="border-solid border-2 border-sky-500 w-fit p-2">
+            <label htmlFor="password">Password:</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+        </div>
+      );
+    }
   }
 
   if (loading) {
@@ -55,16 +112,19 @@ export default function Upload() {
       >
         <input type="file" name="file" onChange={handleChange} />
         <br />
-        <button type="submit">Upload</button>
+        <input type="checkbox" onChange={handleUsePassword} />
+        <p>Use Password?</p>
+        {uploadUsePassword && <UploadPasswordFill />}
+        <br />
+        <button
+          className="border-solid border-2 border-sky-500 p-1"
+          type="submit"
+        >
+          Upload
+        </button>
       </form>
       <br />
-      {success && (
-        <>
-          <p>{success.message}</p>
-          <p>Name: {success.file}</p>
-          <p>Size: {success.size}</p>
-        </>
-      )}
+      {success && <Confirmation />}
       {error && <p>Error: {error}</p>}
     </div>
   );
