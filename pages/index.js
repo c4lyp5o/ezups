@@ -3,7 +3,6 @@ import Footer from './components/Footer';
 import Upload from './components/Upload';
 import Header from './components/Header';
 import Download from './components/Download';
-import Test from './components/Test';
 
 export default function Main() {
   return (
@@ -21,7 +20,6 @@ export default function Main() {
           <Download />
         </div>
       </div>
-      <Test />
       <Footer />
     </div>
   );

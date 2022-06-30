@@ -47,6 +47,7 @@ downloadAPI.post(async (req, res) => {
       // password: password,
     },
   });
+  console.log(Uploads);
   try {
     const { filename, size, mimetype } = Uploads;
     res.status(200).json({

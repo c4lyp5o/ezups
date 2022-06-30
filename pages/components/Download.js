@@ -4,43 +4,53 @@ import axios from 'axios';
 export default function Download() {
   const key = useRef('');
   const filename = useRef('');
-  const mimetype = useRef('');
+  const size = useRef('');
+  const downloadError = useRef('');
   const [downloadUsePassword, setDownloadUsePassword] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [showError, setShowError] = useState(false);
-  const [info, setInfo] = useState('');
   const [downloadPassword, setDownloadPassword] = useState('');
+  const [showDownloadSuccess, setShowDownloadSuccess] = useState(false);
+  const [showDownloadError, setShowDownloadError] = useState(false);
+  // const [downloadInfo, setDownloadInfo] = useState([]);
 
-  const handleChange = (e) => {
-    key.current = e.target.value;
-  };
+  // const saveFile = async (blob, name, type) => {
+  //   const a = document.createElement('a');
+  //   a.download = name;
+  //   a.href = URL.createObjectURL(new Blob([blob], { type: type }));
+  //   a.addEventListener('click', (e) => {
+  //     setTimeout(() => {
+  //       URL.revokeObjectURL(a.href);
+  //     }, 100);
+  //   });
+  //   a.click();
+  // };
 
-  const saveFile = async (blob, name, type) => {
-    const a = document.createElement('a');
-    a.download = name;
-    a.href = URL.createObjectURL(new Blob([blob], { type: type }));
-    a.addEventListener('click', (e) => {
+  const saveFile = async (blob, filename) => {
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = URL.createObjectURL(new Blob([blob]));
+    link.addEventListener('click', (e) => {
       setTimeout(() => {
-        URL.revokeObjectURL(a.href);
+        URL.revokeObjectURL(link.href);
       }, 100);
     });
-    a.click();
+    link.click();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setShowError(false);
-    setShowSuccess(false);
+    setShowDownloadError(false);
+    setShowDownloadSuccess(false);
+    // console.log(key.current);
     // await axios
     //   .post('/api/download', { key: key.current })
     //   .then((res) => {
     //     filename.current = res.data.file;
-    //     mimetype.current = res.data.mimetype;
-    //     setShowSuccess(true);
+    //     setDownloadInfo(res.data);
+    //     setShowDownloadSuccess(true);
     //   })
     //   .catch((err) => {
     //     console.log(err);
-    //     setShowError(true);
+    //     setShowDownloadError(true);
     //     setInfo(err);
     //   });
     // await axios
@@ -48,7 +58,8 @@ export default function Download() {
     //     responseType: 'blob',
     //   })
     //   .then((res) => {
-    //     saveFile(res.data, filename.current, mimetype.current);
+    //     saveFile(res.data, filename.current);
+    //     console.log(downloadInfo);
     //   })
     //   .catch((err) => {
     //     console.log(err);
@@ -58,103 +69,102 @@ export default function Download() {
         key: key.current,
         password: downloadPassword.current,
       });
-      filename.current = await theFile.data.file;
-      mimetype.current = await theFile.data.mimetype;
+      filename.current = theFile.data.file;
+      size.current = theFile.data.size;
       const theBits = await axios.get(`/api/download?key=${key.current}`, {
         responseType: 'blob',
       });
-      saveFile(theBits.data, filename.current, mimetype.current);
-      setShowSuccess(true);
+      saveFile(theBits.data, theFile.data.file);
+      setShowDownloadSuccess(true);
     } catch (err) {
-      setInfo(err);
-      setShowError(true);
+      // console.log(err.response);
+      downloadError.current = err.response.data.message;
+      setShowDownloadError(true);
     }
   };
 
-  function Success() {
-    return (
-      <div className="flex flex-col items-center justify-center">
-        <div className="border-solid border-2 border-sky-500 w-fit p-2">
-          <h3>Success!</h3>
-          <p>
-            <strong>Key:</strong> {key.current}
-            <br />
-            <strong>File:</strong> {filename.current}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  function Failure() {
-    return (
-      <div className="flex flex-col items-center justify-center">
-        <div className="border-solid border-2 border-red-500 w-fit p-2">
-          <h3>Failure!</h3>
-          <p>
-            <strong>Error:</strong> {info.response.data.message}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  function DownloadPasswordFill() {
-    if (downloadUsePassword) {
+  function DownloadSuccessful() {
+    if (showDownloadSuccess) {
       return (
-        <div className="flex flex-col items-center justify-center">
-          <div className="border-solid border-2 border-sky-500 w-fit p-2">
-            <label htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="downloadpassword"
-              name="downloadpassword"
-              value={downloadPassword}
-              onChange={(e) => setDownloadPassword(e.target.value)}
-            />
+        <div className='flex flex-col items-center justify-center'>
+          <div className='border-solid border-2 border-sky-500 w-fit p-2'>
+            <h3>Success!</h3>
+            <p>
+              <strong>File:</strong> {filename.current}
+            </p>
+            <p>
+              <strong>Size:</strong> {size.current}
+            </p>
           </div>
         </div>
       );
     }
   }
 
-  function downloadCheckbox(e) {
-    if (e.target.checked) {
-      setDownloadUsePassword(true);
-    } else {
-      setDownloadUsePassword(false);
+  function DonwloadFailure() {
+    if (showDownloadError) {
+      return (
+        <div className='flex flex-col items-center justify-center'>
+          <div className='border-solid border-2 border-red-500 w-fit p-2'>
+            <h3>Something went wrong!</h3>
+            <p>
+              <strong>Reason:</strong> {downloadError.current}
+            </p>
+          </div>
+        </div>
+      );
     }
   }
 
   return (
-    <div className="p-3">
+    <div className='p-3'>
       <h1>Download files here</h1>
       <br />
       <form
-        className="flex flex-col items-center justify-center"
+        className='flex flex-col items-center justify-center'
         onSubmit={handleSubmit}
       >
         <input
-          className="border-solid border-2 border-sky-500"
-          type="text"
-          onChange={handleChange}
-          placeholder="Enter key"
+          className='border-solid border-2 border-sky-500'
+          type='text'
+          onChange={(e) => (key.current = e.target.value)}
+          placeholder='Enter key'
         />
         <br />
-        <input type="checkbox" onChange={downloadCheckbox} />
+        <input
+          type='checkbox'
+          onChange={(e) =>
+            e.target.checked
+              ? setDownloadUsePassword(true)
+              : setDownloadUsePassword(false)
+          }
+        />
         <p>Use Password?</p>
-        {downloadUsePassword && <DownloadPasswordFill />}
+        {downloadUsePassword && (
+          <div className='flex flex-col items-center justify-center'>
+            <div className='border-solid border-2 border-sky-500 w-fit p-2'>
+              <label htmlFor='password'>Password:</label>
+              <input
+                type='password'
+                id='downloadpassword'
+                name='downloadpassword'
+                value={downloadPassword}
+                onChange={(e) => setDownloadPassword(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
         <br />
         <button
-          className="border-solid border-2 border-sky-500 p-1"
-          type="submit"
+          className='border-solid border-2 border-sky-500 p-1'
+          type='submit'
         >
           Download
         </button>
       </form>
       <br />
-      <div>{showSuccess && Success()}</div>
-      <div>{showError && Failure()}</div>
+      <div>{showDownloadSuccess && <DownloadSuccessful />}</div>
+      <div>{showDownloadError && <DonwloadFailure />}</div>
     </div>
   );
 }

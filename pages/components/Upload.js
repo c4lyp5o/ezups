@@ -3,94 +3,75 @@ import { useState } from 'react';
 
 export default function Upload() {
   const [file, setFile] = useState(null);
-  const [password, setPassword] = useState('');
+  const [uploadPassword, setUploadPassword] = useState('');
   const [uploadUsePassword, setUploadUsePassword] = useState(false);
-  const [error, setError] = useState(null);
+  const [uploadInfo, setUploadInfo] = useState([]);
+  const [uploadError, setUploadError] = useState(false);
+  const [showUploadSuccess, setShowUploadSuccess] = useState(false);
+  const [showUploadError, setShowUploadError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   function handleSubmit(e) {
-    console.log('submitting');
     e.preventDefault();
+    setShowUploadError(false);
+    setShowUploadSuccess(false);
+    if (!file) {
+      setUploadError('No file selected');
+      setShowUploadError(true);
+      return;
+    }
     const config = {
       headers: { 'content-type': 'multipart/form-data' },
-      onUploadProgress: (event) => {
+      onUploadProgress: (e) => {
         console.log(
           `Current progress:`,
-          Math.round((event.loaded * 100) / event.total)
+          Math.round((e.loaded * 100) / e.total)
         );
+        setUploadProgress(Math.round((e.loaded * 100) / e.total));
       },
     };
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('password', password);
+    formData.append('password', uploadPassword);
     setLoading(true);
     axios
       .post('/api/upload', formData, config)
       .then((res) => {
         setLoading(false);
-        setSuccess(res.data);
+        setUploadInfo(res.data);
+        setShowUploadSuccess(true);
         console.log(res.data);
       })
       .catch((err) => {
         setLoading(false);
-        setError(err.response.data.error);
+        setUploadError(err.response.data.error);
+        setShowUploadError(true);
         console.log(err);
       });
   }
 
-  function handleChange(e) {
-    setFile(e.target.files[0]);
-  }
-
-  function handleUsePassword(e) {
-    if (e.target.checked) {
-      setUploadUsePassword(true);
-    } else {
-      setUploadUsePassword(false);
-    }
-  }
-
-  function Confirmation() {
-    if (success) {
+  function UploadSuccessful() {
+    if (showUploadSuccess === true) {
       return (
-        <div className="flex flex-col items-center justify-center">
-          <div className="border-solid border-2 border-sky-500 w-fit p-2">
+        <div className='flex flex-col items-center justify-center'>
+          <div className='border-solid border-2 border-sky-500 w-fit p-2'>
             <h3>Success!</h3>
             <p>
-              <strong>File:</strong> {success.file}
+              <strong>File:</strong> {uploadInfo.file}
             </p>
             <p>
-              <strong>Size:</strong> {success.size}
+              <strong>Size:</strong> {uploadInfo.size}
             </p>
             <p>
-              <strong>Key:</strong> {success.key}
+              <strong>Key:</strong> {uploadInfo.key}
             </p>
             <p>
-              <strong>Password:</strong> {success.password}
+              <strong>Password:</strong> {uploadInfo.password}
             </p>
             <p>
-              <strong>Delete after download?:</strong> {success.dad}
+              <strong>Delete after download?:</strong> {uploadInfo.dad}
             </p>
-          </div>
-        </div>
-      );
-    }
-  }
-
-  function UploadPasswordFill() {
-    if (uploadUsePassword) {
-      return (
-        <div className="flex flex-col items-center justify-center">
-          <div className="border-solid border-2 border-sky-500 w-fit p-2">
-            <label htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
           </div>
         </div>
       );
@@ -98,34 +79,63 @@ export default function Upload() {
   }
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <p>Uploading... {uploadProgress}</p>;
   }
 
   return (
-    <div className="p-3">
+    <div className='p-3'>
       <p>Upload files here.</p>
       <br />
       <form
-        className="flex flex-col items-center justify-center"
-        encType="multipart/form-data"
+        className='flex flex-col items-center justify-center'
+        encType='multipart/form-data'
         onSubmit={handleSubmit}
       >
-        <input type="file" name="file" onChange={handleChange} />
+        <input
+          type='file'
+          name='file'
+          onClick={(e) => {
+            setShowUploadError(false);
+            setShowUploadSuccess(false);
+          }}
+          onChange={(e) => setFile(e.target.files[0])}
+        />
         <br />
-        <input type="checkbox" onChange={handleUsePassword} />
+        <input
+          type='checkbox'
+          onChange={(e) =>
+            e.target.checked
+              ? setUploadUsePassword(true)
+              : setUploadUsePassword(false)
+          }
+        />
         <p>Use Password?</p>
-        {uploadUsePassword && <UploadPasswordFill />}
+        {uploadUsePassword && (
+          <div className='flex flex-col items-center justify-center'>
+            <div className='border-solid border-2 border-sky-500 w-fit p-2'>
+              <label htmlFor='password'>Password:</label>
+              <input
+                key='upload-password'
+                type='password'
+                id='password'
+                name='password'
+                value={uploadPassword}
+                onChange={(e) => setUploadPassword(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
         <br />
         <button
-          className="border-solid border-2 border-sky-500 p-1"
-          type="submit"
+          className='border-solid border-2 border-sky-500 p-1'
+          type='submit'
         >
           Upload
         </button>
       </form>
       <br />
-      {success && <Confirmation />}
-      {error && <p>Error: {error}</p>}
+      {showUploadSuccess && <UploadSuccessful />}
+      {showUploadError && <p>Error: {uploadError}</p>}
     </div>
   );
 }
