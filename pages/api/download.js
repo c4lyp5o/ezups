@@ -7,11 +7,8 @@ import fs from 'fs';
 const downloadAPI = nextConnect();
 downloadAPI.use(middleware);
 
-var key = '';
-var password = '';
-
 async function responseType(req, res) {
-  res.status(404).json({
+  return res.status(404).json({
     status: 'Failed',
     code: 404,
     message: 'No file found using the key provided!',
@@ -19,35 +16,36 @@ async function responseType(req, res) {
 }
 
 downloadAPI.get(async (req, res) => {
+  // console.log(req.query);
+  const { key, password } = req.query;
   const Uploads = await prisma.uploads.findFirst({
     where: {
       key: key,
-      // password: password,
+      password: password,
     },
   });
   if (!Uploads) {
     responseType(req, res);
-  } else {
-    const file = fs.readFileSync(path.resolve(process.cwd(), Uploads.path));
-    res.setHeader('Content-Type', Uploads.mimetype);
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename=${Uploads.filename}`
-    );
-    res.send(file);
   }
+  // else if (Uploads.password !== password) {
+  //   responseType(req, res);
+  // }
+  const file = fs.readFileSync(path.resolve(process.cwd(), Uploads.path));
+  res.setHeader('Content-Type', Uploads.mimetype);
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename=${Uploads.filename}`
+  );
+  res.send(file);
 });
 
 downloadAPI.post(async (req, res) => {
-  key = req.body.key;
-  password = req.body.password;
   const Uploads = await prisma.uploads.findFirst({
     where: {
-      key: key,
-      // password: password,
+      key: req.body.key,
+      password: req.body.password,
     },
   });
-  console.log(Uploads);
   try {
     const { filename, size, mimetype } = Uploads;
     res.status(200).json({

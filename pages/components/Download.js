@@ -3,11 +3,12 @@ import axios from 'axios';
 
 export default function Download() {
   const key = useRef('');
+  // const [downloadPassword, setDownloadPassword] = useState('');
+  const downloadPassword = useRef('');
   const filename = useRef('');
   const size = useRef('');
   const downloadError = useRef('');
   const [downloadUsePassword, setDownloadUsePassword] = useState(false);
-  const [downloadPassword, setDownloadPassword] = useState('');
   const [showDownloadSuccess, setShowDownloadSuccess] = useState(false);
   const [showDownloadError, setShowDownloadError] = useState(false);
   // const [downloadInfo, setDownloadInfo] = useState([]);
@@ -71,14 +72,17 @@ export default function Download() {
       });
       filename.current = theFile.data.file;
       size.current = theFile.data.size;
-      const theBits = await axios.get(`/api/download?key=${key.current}`, {
-        responseType: 'blob',
-      });
+      const theBits = await axios.get(
+        `/api/download?key=${key.current}&password=${downloadPassword.current}`,
+        {
+          responseType: 'blob',
+        }
+      );
       saveFile(theBits.data, theFile.data.file);
       setShowDownloadSuccess(true);
     } catch (err) {
-      // console.log(err.response);
-      downloadError.current = err.response.data.message;
+      console.log(err);
+      downloadError.current = err.response.statusText;
       setShowDownloadError(true);
     }
   };
@@ -148,8 +152,7 @@ export default function Download() {
                 type='password'
                 id='downloadpassword'
                 name='downloadpassword'
-                value={downloadPassword}
-                onChange={(e) => setDownloadPassword(e.target.value)}
+                onChange={(e) => (downloadPassword.current = e.target.value)}
               />
             </div>
           </div>

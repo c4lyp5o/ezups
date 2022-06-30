@@ -41,13 +41,13 @@ export default function Upload() {
         setLoading(false);
         setUploadInfo(res.data);
         setShowUploadSuccess(true);
-        console.log(res.data);
+        // console.log(res.data);
       })
       .catch((err) => {
         setLoading(false);
         setUploadError(err.response.data.error);
         setShowUploadError(true);
-        console.log(err);
+        // console.log(err);
       });
   }
 
@@ -66,12 +66,14 @@ export default function Upload() {
             <p>
               <strong>Key:</strong> {uploadInfo.key}
             </p>
-            <p>
-              <strong>Password:</strong> {uploadInfo.password}
-            </p>
-            <p>
+            {uploadUsePassword && (
+              <p>
+                <strong>Password:</strong> {uploadInfo.password}
+              </p>
+            )}
+            {/* <p>
               <strong>Delete after download?:</strong> {uploadInfo.dad}
-            </p>
+            </p> */}
           </div>
         </div>
       );
