@@ -9,6 +9,8 @@ COPY package*.json ./
 
 # run npm install in our local machine
 RUN npm install
+RUN npm i axios
+RUN npm i multer
 
 # copy the generated modules and all other files to the container
 COPY . .
@@ -22,5 +24,8 @@ RUN npx prisma generate
 # our app is running on port 5000 within the container, so need to expose it
 EXPOSE 3000
 
+# create optimized build for production
+RUN npm run build
+
 # the command that starts our app
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]

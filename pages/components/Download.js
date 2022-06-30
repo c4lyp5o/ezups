@@ -82,7 +82,7 @@ export default function Download() {
       setShowDownloadSuccess(true);
     } catch (err) {
       console.log(err);
-      downloadError.current = err.response.statusText;
+      downloadError.current = err.response.data.message;
       setShowDownloadError(true);
     }
   };
@@ -129,6 +129,7 @@ export default function Download() {
         onSubmit={handleSubmit}
       >
         <input
+          required
           className='border-solid border-2 border-sky-500'
           type='text'
           onChange={(e) => (key.current = e.target.value)}
@@ -149,6 +150,7 @@ export default function Download() {
             <div className='border-solid border-2 border-sky-500 w-fit p-2'>
               <label htmlFor='password'>Password:</label>
               <input
+                required
                 type='password'
                 id='downloadpassword'
                 name='downloadpassword'

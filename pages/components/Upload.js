@@ -94,6 +94,7 @@ export default function Upload() {
         onSubmit={handleSubmit}
       >
         <input
+          required
           type='file'
           name='file'
           onClick={(e) => {
@@ -117,6 +118,7 @@ export default function Upload() {
             <div className='border-solid border-2 border-sky-500 w-fit p-2'>
               <label htmlFor='password'>Password:</label>
               <input
+                required
                 key='upload-password'
                 type='password'
                 id='password'
