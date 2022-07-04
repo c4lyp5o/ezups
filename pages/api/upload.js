@@ -1,14 +1,25 @@
-import middleware from '../../middleware/conf';
+import { multmidd, logmidd } from '../../middleware/conf';
 import nextConnect from 'next-connect';
 import prisma from '../../lib/prisma';
 import crypto from 'crypto';
 
 const uploadAPI = nextConnect();
-
-uploadAPI.use(middleware);
+uploadAPI.use(multmidd);
 
 uploadAPI.post(async (req, res) => {
+  if (!req.files) {
+    logmidd.warn(`${req.method} ${req.url} User did not upload any files`);
+    return res.status(400).json({
+      status: 'Failed',
+      code: 400,
+      error: 'No files were uploaded',
+    });
+  }
+  logmidd.info(
+    `${req.method} ${req.url} Uploaded File: ${req.files[0].originalname}`
+  );
   const random = crypto.randomBytes(3).toString('hex');
+  logmidd.info(`Created random string for upload`);
   const Uploads = await prisma.uploads.create({
     data: {
       filename: req.files[0].filename,

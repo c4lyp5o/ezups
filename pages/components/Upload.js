@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useState } from 'react';
 
-export default function Upload() {
+export default function Upload({ niceBytesYouHaveThere }) {
   const [file, setFile] = useState(null);
   const [uploadPassword, setUploadPassword] = useState('');
   const [uploadUsePassword, setUploadUsePassword] = useState(false);
@@ -12,7 +12,7 @@ export default function Upload() {
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setShowUploadError(false);
     setShowUploadSuccess(false);
@@ -31,24 +31,28 @@ export default function Upload() {
         setUploadProgress(Math.round((e.loaded * 100) / e.total));
       },
     };
+    if (file.size > 9961472) {
+      setUploadError(
+        `File too large. Your file is ${niceBytesYouHaveThere(file.size)}`
+      );
+      setShowUploadError(true);
+      return;
+    }
     const formData = new FormData();
     formData.append('file', file);
     formData.append('password', uploadPassword);
+    formData.append('API_KEY', process.env.NEXT_PUBLIC_API_HASH);
     setLoading(true);
-    axios
-      .post('/api/upload', formData, config)
-      .then((res) => {
-        setLoading(false);
-        setUploadInfo(res.data);
-        setShowUploadSuccess(true);
-        // console.log(res.data);
-      })
-      .catch((err) => {
-        setLoading(false);
-        setUploadError(err.response.data.error);
-        setShowUploadError(true);
-        // console.log(err);
-      });
+    try {
+      const theFile = await axios.post('/api/upload', formData, config);
+      setUploadInfo(theFile.data);
+      setShowUploadSuccess(true);
+    } catch (err) {
+      console.log(err);
+      setUploadError(err.response.data.error);
+      setShowUploadError(true);
+    }
+    setLoading(false);
   }
 
   function UploadSuccessful() {
@@ -61,7 +65,7 @@ export default function Upload() {
               <strong>File:</strong> {uploadInfo.file}
             </p>
             <p>
-              <strong>Size:</strong> {uploadInfo.size}
+              <strong>Size:</strong> {niceBytesYouHaveThere(uploadInfo.size)}
             </p>
             <p>
               <strong>Key:</strong> {uploadInfo.key}
@@ -81,7 +85,15 @@ export default function Upload() {
   }
 
   if (loading) {
-    return <p>Uploading... {uploadProgress}</p>;
+    return (
+      <>
+        <div>
+          <p>Uploading...</p>
+          <progress className='mr-2' value={uploadProgress} max='100' />
+          {uploadProgress}%
+        </div>
+      </>
+    );
   }
 
   return (
@@ -139,7 +151,13 @@ export default function Upload() {
       </form>
       <br />
       {showUploadSuccess && <UploadSuccessful />}
-      {showUploadError && <p>Error: {uploadError}</p>}
+      {showUploadError && (
+        <div className='flex flex-col items-center justify-center'>
+          <div className='border-solid border-2 border-red-500 w-fit p-2'>
+            <p>Error: {uploadError}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

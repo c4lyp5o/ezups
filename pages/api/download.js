@@ -1,22 +1,22 @@
+import { multmidd, logmidd } from '../../middleware/conf';
 import prisma from '../../lib/prisma';
 import nextConnect from 'next-connect';
-import middleware from '../../middleware/conf';
 import path from 'path';
 import fs from 'fs';
 
 const downloadAPI = nextConnect();
-downloadAPI.use(middleware);
+downloadAPI.use(multmidd);
 
 async function responseType(req, res) {
+  logmidd.warn(`${req.method} ${req.url} User entered wrong key / password`);
   return res.status(404).json({
     status: 'Failed',
     code: 404,
-    message: 'No file found using the key provided!',
+    error: 'No file found using the key provided!',
   });
 }
 
 downloadAPI.get(async (req, res) => {
-  // console.log(req.query);
   const { key, password } = req.query;
   const Uploads = await prisma.uploads.findFirst({
     where: {
@@ -24,22 +24,30 @@ downloadAPI.get(async (req, res) => {
       password: password,
     },
   });
-  if (!Uploads) {
+  try {
+    logmidd.info(
+      `${req.method} ${req.url} Downloading file: ${Uploads.filename}`
+    );
+    res.setHeader('Content-Type', Uploads.mimetype);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=${Uploads.filename}`
+    );
+    res.send(fs.readFileSync(path.resolve(process.cwd(), Uploads.path)));
+  } catch (error) {
     responseType(req, res);
   }
-  // else if (Uploads.password !== password) {
-  //   responseType(req, res);
-  // }
-  const file = fs.readFileSync(path.resolve(process.cwd(), Uploads.path));
-  res.setHeader('Content-Type', Uploads.mimetype);
-  res.setHeader(
-    'Content-Disposition',
-    `attachment; filename=${Uploads.filename}`
-  );
-  res.send(file);
 });
 
 downloadAPI.post(async (req, res) => {
+  const { key } = req.body;
+  if (!key) {
+    logmidd.warn(
+      `${req.method} ${req.url} User accessed API route without file key`
+    );
+    return res.status(401).json({ error: "Don't do that again!" });
+  }
+  logmidd.info(`${req.method} ${req.url} Searching for file`);
   const Uploads = await prisma.uploads.findFirst({
     where: {
       key: req.body.key,
@@ -59,16 +67,6 @@ downloadAPI.post(async (req, res) => {
   } catch (error) {
     responseType(req, res);
   }
-  // if (!Uploads) {
-  //   responseType(req, res);
-  // } else {
-  //   res.status(200).json({
-  //     message: 'File Downloaded',
-  //     file: Uploads.filename,
-  //     size: Uploads.size,
-  //     mimetype: Uploads.mimetype,
-  //   });
-  // }
 });
 
 export default downloadAPI;

@@ -1,6 +1,15 @@
 # pull the Node.js Docker image
 FROM node:alpine
 
+# update the package index
+RUN apk update
+
+# add busybox initscripts to the PATH
+RUN apk add busybox-initscripts curl openrc
+
+# start cron daemon
+RUN rc-service crond start && rc-update add crond
+
 # create the directory inside the container
 WORKDIR /usr/src/app
 
@@ -9,8 +18,6 @@ COPY package*.json ./
 
 # run npm install in our local machine
 RUN npm install
-RUN npm i axios
-RUN npm i multer
 
 # copy the generated modules and all other files to the container
 COPY . .
@@ -21,7 +28,7 @@ RUN npx prisma db push
 # generate prisma client
 RUN npx prisma generate
 
-# our app is running on port 5000 within the container, so need to expose it
+# our app is running on port 3000 within the container, so need to expose it
 EXPOSE 3000
 
 # create optimized build for production

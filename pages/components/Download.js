@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import axios from 'axios';
 
-export default function Download() {
+export default function Download({ niceBytesYouHaveThere }) {
   const key = useRef('');
   // const [downloadPassword, setDownloadPassword] = useState('');
   const downloadPassword = useRef('');
@@ -11,19 +11,6 @@ export default function Download() {
   const [downloadUsePassword, setDownloadUsePassword] = useState(false);
   const [showDownloadSuccess, setShowDownloadSuccess] = useState(false);
   const [showDownloadError, setShowDownloadError] = useState(false);
-  // const [downloadInfo, setDownloadInfo] = useState([]);
-
-  // const saveFile = async (blob, name, type) => {
-  //   const a = document.createElement('a');
-  //   a.download = name;
-  //   a.href = URL.createObjectURL(new Blob([blob], { type: type }));
-  //   a.addEventListener('click', (e) => {
-  //     setTimeout(() => {
-  //       URL.revokeObjectURL(a.href);
-  //     }, 100);
-  //   });
-  //   a.click();
-  // };
 
   const saveFile = async (blob, filename) => {
     const link = document.createElement('a');
@@ -41,34 +28,11 @@ export default function Download() {
     e.preventDefault();
     setShowDownloadError(false);
     setShowDownloadSuccess(false);
-    // console.log(key.current);
-    // await axios
-    //   .post('/api/download', { key: key.current })
-    //   .then((res) => {
-    //     filename.current = res.data.file;
-    //     setDownloadInfo(res.data);
-    //     setShowDownloadSuccess(true);
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //     setShowDownloadError(true);
-    //     setInfo(err);
-    //   });
-    // await axios
-    //   .get(`/api/download?key=${key.current}`, {
-    //     responseType: 'blob',
-    //   })
-    //   .then((res) => {
-    //     saveFile(res.data, filename.current);
-    //     console.log(downloadInfo);
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
     try {
       const theFile = await axios.post('/api/download', {
         key: key.current,
         password: downloadPassword.current,
+        API_KEY: process.env.NEXT_PUBLIC_API_HASH,
       });
       filename.current = theFile.data.file;
       size.current = theFile.data.size;
@@ -81,8 +45,7 @@ export default function Download() {
       saveFile(theBits.data, theFile.data.file);
       setShowDownloadSuccess(true);
     } catch (err) {
-      console.log(err);
-      downloadError.current = err.response.data.message;
+      downloadError.current = err.response.data.error;
       setShowDownloadError(true);
     }
   };
@@ -97,7 +60,7 @@ export default function Download() {
               <strong>File:</strong> {filename.current}
             </p>
             <p>
-              <strong>Size:</strong> {size.current}
+              <strong>Size:</strong> {niceBytesYouHaveThere(size.current)}
             </p>
           </div>
         </div>
@@ -122,7 +85,7 @@ export default function Download() {
 
   return (
     <div className='p-3'>
-      <h1>Download files here</h1>
+      <h1>Download files here.</h1>
       <br />
       <form
         className='flex flex-col items-center justify-center'
