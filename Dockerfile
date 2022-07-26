@@ -8,7 +8,7 @@ RUN apk update
 RUN apk add busybox-initscripts curl openrc
 
 # start cron daemon
-RUN rc-service crond start && rc-update add crond
+RUN rc-update add crond
 
 # create the directory inside the container
 WORKDIR /usr/src/app
@@ -27,6 +27,12 @@ RUN npx prisma db push
 
 # generate prisma client
 RUN npx prisma generate
+
+# make script executable
+RUN chmod 0744 ./scripts/purge.sh
+
+# make cronjob
+RUN echo "0 1 * * * ./scripts/purge.sh" >> /etc/crontabs/root
 
 # our app is running on port 3000 within the container, so need to expose it
 EXPOSE 3000
