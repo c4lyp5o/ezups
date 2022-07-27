@@ -32,7 +32,7 @@ RUN npx prisma generate
 RUN chmod +x ./scripts/purge.sh
 
 # add cronjob
-RUN echo "* * * * * /bin/ash /usr/src/app/scripts/purge.sh" >> /var/spool/cron/crontabs/root
+RUN echo "0 1 * * * /bin/ash /usr/src/app/scripts/purge.sh" >> /var/spool/cron/crontabs/root
 
 # our app is running on port 3000 within the container, so need to expose it
 EXPOSE 3000
