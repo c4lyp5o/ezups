@@ -64,7 +64,7 @@ const multmidd = nextConnect({
         logmidd.warn(
           `${req.method} ${req.url} User accessed API route with invalid API key`
         );
-        return res.status(401).json({ error: `Unauthorized` });
+        return res.status(401).json({ error: `No hacky hacky` });
       }
       next();
     } catch (error) {

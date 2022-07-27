@@ -16,10 +16,6 @@ WORKDIR /usr/src/app
 # copy the package.json files from local machine to the workdir in container
 COPY package*.json ./
 
-RUN mkdir logs
-
-RUN mkdir ./public/uploads
-
 # run npm install in our local machine
 RUN npm install
 
@@ -33,10 +29,10 @@ RUN npx prisma db push
 RUN npx prisma generate
 
 # make script executable
-RUN chmod 0744 ./scripts/purge.sh
+RUN chmod +x ./scripts/purge.sh
 
 # add cronjob
-RUN echo "* * * * * usr/src/app/scripts/purge.sh" >> /etc/crontabs/root
+RUN echo "* * * * * /bin/ash /usr/src/app/scripts/purge.sh" >> /var/spool/cron/crontabs/root
 
 # our app is running on port 3000 within the container, so need to expose it
 EXPOSE 3000
@@ -45,4 +41,4 @@ EXPOSE 3000
 RUN npm run build
 
 # the command that starts our app
-CMD ["sh", "-c", "npm start && crond -f"]
+CMD crond && npm start

@@ -38,4 +38,3 @@ yarn-error.log*
 everything.log
 
 # uploads
-public/uploads/*
