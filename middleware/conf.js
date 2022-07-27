@@ -52,8 +52,7 @@ const multmidd = nextConnect({
   .use(multer({ storage: safekeeping }).any())
   .post((req, res, next) => {
     try {
-      const API_KEY = cryptic.decrypt(req.body.API_KEY);
-      next();
+      const dehashed = cryptic.decrypt(req.body.API_KEY);
     } catch (error) {
       logmidd.warn(
         `${req.method} ${req.url} User accessed API route without API key`

@@ -5,7 +5,7 @@ FROM node:alpine
 RUN apk update
 
 # add busybox initscripts to the PATH
-RUN apk add busybox-initscripts curl openrc
+RUN apk add --no-cache busybox-initscripts curl openrc
 
 # start cron daemon
 RUN rc-update add crond
@@ -31,8 +31,8 @@ RUN npx prisma generate
 # make script executable
 RUN chmod 0744 ./scripts/purge.sh
 
-# make cronjob
-RUN echo "0 1 * * * ./scripts/purge.sh" >> /etc/crontabs/root
+# add cronjob
+RUN echo "* * * * * usr/src/app/scripts/purge.sh" >> /etc/crontabs/root
 
 # our app is running on port 3000 within the container, so need to expose it
 EXPOSE 3000
@@ -41,4 +41,4 @@ EXPOSE 3000
 RUN npm run build
 
 # the command that starts our app
-CMD ["npm", "start"]
+CMD ["npm", "start" && "/usr/sbin/crond", "-f"]

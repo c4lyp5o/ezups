@@ -9,6 +9,13 @@ const cronAPI = nextConnect();
 cronAPI.use(multmidd);
 
 cronAPI.post(async (req, res) => {
+  const { API_KEY } = req.body;
+  if (!API_KEY) {
+    logmidd.warn(
+      `${req.method} ${req.url} User accessed API route without API key`
+    );
+    return res.status(401).json({ error: `Unauthorized` });
+  }
   logmidd.info(`${req.method} ${req.url} Clearing all database and files`);
   const uploads = await prisma.uploads.findMany();
   logmidd.info(`${req.method} ${req.url} Found ${uploads.length} files`);
