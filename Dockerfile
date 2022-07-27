@@ -41,4 +41,4 @@ EXPOSE 3000
 RUN npm run build
 
 # the command that starts our app
-CMD ["npm", "start" && "/usr/sbin/crond", "-f"]
+CMD ["sh", "-c", "npm start && crond -f"]
