@@ -52,7 +52,21 @@ const multmidd = nextConnect({
   .use(multer({ storage: safekeeping }).any())
   .post((req, res, next) => {
     try {
+      const { API_KEY } = req.body;
+      if (!API_KEY) {
+        logmidd.warn(
+          `${req.method} ${req.url} User accessed API route without API key`
+        );
+        return res.status(401).json({ error: `Unauthorized` });
+      }
       const dehashed = cryptic.decrypt(req.body.API_KEY);
+      if (dehashed !== process.env.API_KEY) {
+        logmidd.warn(
+          `${req.method} ${req.url} User accessed API route with invalid API key`
+        );
+        return res.status(401).json({ error: `Unauthorized` });
+      }
+      next();
     } catch (error) {
       logmidd.warn(
         `${req.method} ${req.url} User accessed API route without API key`
