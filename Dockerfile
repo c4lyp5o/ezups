@@ -16,6 +16,10 @@ WORKDIR /usr/src/app
 # copy the package.json files from local machine to the workdir in container
 COPY package*.json ./
 
+RUN mkdir logs
+
+RUN mkdir ./public/uploads
+
 # run npm install in our local machine
 RUN npm install
 
