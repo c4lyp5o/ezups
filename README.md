@@ -1,34 +1,48 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# EZ-UPS
+
+In the name of God, the merciful, the gracious
+
+## What is it
+
+Simple file uploading and downloading utility tool. Ever tried uploading a file to whatsapp and then logging in to another computer and downloading the file? Or uploading file to google drive and then downloading it from another computer while having to key in 2FA, clicking activation link etc etc? Sucks right? Well, life is hard and don't make it harder. WIth ezups, you upload a file, get a key, then go to another computer, open ezups again, key in the key and download the file. EZ as EZUPS.
 
 ## Getting Started
 
 First, run the development server:
 
 ```bash
+
 npm run dev
+
 # or
+
 yarn dev
+
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## Requirements
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+EZUPS is using Postgresql as its database. Im thinking of using SQLite in the future to reduce dependancy. Other than that its just npm install and npm run dev. Or you could npm run build and npm start.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## Features
 
-## Learn More
+1. Security - Authorization and authentication is implemented for API routes.
 
-To learn more about Next.js, take a look at the following resources:
+2. File Upload - Uploads a file to the server and returns a key.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. File Download - Downloads a file from the server using the key.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+4. Autopurge - Automatically deletes files older than 24 hours.
 
-## Deploy on Vercel
+5. File Metadata - Returns metadata about a file.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Limitations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+I should have build this not using Nextjs no because Nextjs is not good, but because its API routes can only support < 10MB of transfers. So, no files 10MB and above. Im still working on deletion after download so it may take a while.
+
+## Other info
+
+MIT License
+Created with Nextjs.
