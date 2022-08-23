@@ -25,9 +25,6 @@ RUN npm install
 # copy the generated modules and all other files to the container
 COPY . .
 
-# create sqlite database
-RUN npx prisma init --datasource-provider sqlite
-
 # migrate models to database
 RUN npx prisma migrate dev --name init
 
