@@ -38,3 +38,4 @@ yarn-error.log*
 everything.log
 
 # uploads
+.vscode

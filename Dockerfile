@@ -5,10 +5,13 @@ FROM node:alpine
 RUN apk update
 
 # add busybox initscripts to the PATH
-RUN apk add --no-cache busybox-initscripts curl openrc
+RUN apk add --no-cache busybox-initscripts curl openrc tzdata
 
 # start cron daemon
 RUN rc-update add crond
+
+# set timezone data
+ENV TZ=Asia/Kuala_Lumpur
 
 # create the directory inside the container
 WORKDIR /usr/src/app
@@ -22,11 +25,11 @@ RUN npm install
 # copy the generated modules and all other files to the container
 COPY . .
 
-# push schema to postgres
-RUN npx prisma db push
+# create sqlite database
+RUN npx prisma init --datasource-provider sqlite
 
-# generate prisma client
-RUN npx prisma generate
+# migrate models to database
+RUN npx prisma migrate dev --name init
 
 # make script executable
 RUN chmod +x ./scripts/purge.sh
