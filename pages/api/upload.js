@@ -28,7 +28,7 @@ uploadAPI.post(async (req, res) => {
       size: req.files[0].size,
       key: random,
       password: req.body.password,
-      dad: 'yes',
+      dad: req.body.dad,
     },
   });
   res.status(200).json({

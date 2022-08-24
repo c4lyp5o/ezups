@@ -30,6 +30,16 @@ export default function Main() {
           <Download niceBytesYouHaveThere={niceBytesYouHaveThere} />
         </div>
       </div>
+      <div className='align-middle items-center content-center justify-center'>
+        <div className='flex flex-col items-center justify-center'>
+          <div className='border-solid border-2 border-sky-500 w-fit p-2'>
+            <h3 className='text-red-600'>New feature!</h3>
+            <p>
+              <strong>Delete after download option is LIVE!</strong>
+            </p>
+          </div>
+        </div>
+      </div>
       <Footer />
     </div>
   );

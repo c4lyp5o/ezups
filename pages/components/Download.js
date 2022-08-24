@@ -7,6 +7,7 @@ export default function Download({ niceBytesYouHaveThere }) {
   const downloadPassword = useRef('');
   const filename = useRef('');
   const size = useRef('');
+  const deleteAfterDownload = useRef(false);
   const downloadError = useRef('');
   const [downloadUsePassword, setDownloadUsePassword] = useState(false);
   const [showDownloadSuccess, setShowDownloadSuccess] = useState(false);
@@ -34,8 +35,10 @@ export default function Download({ niceBytesYouHaveThere }) {
         password: downloadPassword.current,
         API_KEY: process.env.NEXT_PUBLIC_API_HASH,
       });
+      console.log(theFile.data);
       filename.current = theFile.data.file;
       size.current = theFile.data.size;
+      deleteAfterDownload.current = theFile.data.dad;
       const theBits = await axios.get(
         `/api/download?key=${key.current}&password=${downloadPassword.current}`,
         {
@@ -62,6 +65,11 @@ export default function Download({ niceBytesYouHaveThere }) {
             <p>
               <strong>Size:</strong> {niceBytesYouHaveThere(size.current)}
             </p>
+            {deleteAfterDownload.current == 'true' && (
+              <p>
+                <strong>Deleting your file after download</strong>
+              </p>
+            )}
           </div>
         </div>
       );

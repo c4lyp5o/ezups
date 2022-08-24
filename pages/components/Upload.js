@@ -5,6 +5,8 @@ export default function Upload({ niceBytesYouHaveThere }) {
   const [file, setFile] = useState(null);
   const [uploadPassword, setUploadPassword] = useState('');
   const [uploadUsePassword, setUploadUsePassword] = useState(false);
+  const [uploadDeleteAfterDownload, setUploadDeleteAfterDownload] =
+    useState(false);
   const [uploadInfo, setUploadInfo] = useState([]);
   const [uploadError, setUploadError] = useState(false);
   const [showUploadSuccess, setShowUploadSuccess] = useState(false);
@@ -41,10 +43,12 @@ export default function Upload({ niceBytesYouHaveThere }) {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('password', uploadPassword);
+    formData.append('dad', uploadDeleteAfterDownload);
     formData.append('API_KEY', process.env.NEXT_PUBLIC_API_HASH);
     setLoading(true);
     try {
       const theFile = await axios.post('/api/upload', formData, config);
+      console.log(theFile.data);
       setUploadInfo(theFile.data);
       setShowUploadSuccess(true);
     } catch (err) {
@@ -75,9 +79,12 @@ export default function Upload({ niceBytesYouHaveThere }) {
                 <strong>Password:</strong> {uploadInfo.password}
               </p>
             )}
-            {/* <p>
-              <strong>Delete after download?:</strong> {uploadInfo.dad}
-            </p> */}
+            {uploadDeleteAfterDownload && (
+              <p>
+                <strong>Delete after download?:</strong>{' '}
+                {uploadInfo.dad ? 'Yes' : 'No'}
+              </p>
+            )}
           </div>
         </div>
       );
@@ -141,6 +148,15 @@ export default function Upload({ niceBytesYouHaveThere }) {
             </div>
           </div>
         )}
+        <input
+          type='checkbox'
+          onChange={(e) =>
+            e.target.checked
+              ? setUploadDeleteAfterDownload(true)
+              : setUploadDeleteAfterDownload(false)
+          }
+        />
+        <p>Delete after download?</p>
         <br />
         <button
           className='border-solid border-2 border-sky-500 p-1'
