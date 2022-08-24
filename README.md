@@ -4,7 +4,7 @@ In the name of God, the merciful, the gracious
 
 ## What is it
 
-Simple file uploading and downloading utility tool. Ever tried uploading a file to whatsapp and then logging in to another computer and downloading the file? Or uploading file to google drive and then downloading it from another computer while having to key in 2FA, clicking activation link etc etc? Sucks right? Well, life is hard and don't make it harder. With ezups, you upload a file, get a key, then go to another computer, open ezups again, key in the key and download the file. EZ as EZUPS.
+Simple file uploading and downloading utility tool. Ever tried uploading a file to whatsapp and then logging in to another computer and downloading the file? Or uploading file to google drive and then downloading it from another computer while having to key in 2FA, clicking activation link etc etc? Sucks right? Well, life is hard and don't make it harder. With ezups, you upload a file, get the key, then go to another computer, open ezups again, key in the key and download the file. EZ as EZUPS.
 
 ## Getting Started
 
@@ -13,6 +13,10 @@ First, generate your ENV file.
 ```bash
 
 $ npm run genenv
+
+# or
+
+$ yarn genenv
 
 ```
 
@@ -23,6 +27,22 @@ Second, generate the sqlite database.
 ```bash
 
 $ npm run gendb
+
+# or
+
+$ yarn gendb
+
+```
+
+Third, install dependencies.
+
+```bash
+
+$ npm install
+
+# or
+
+$ yarn install
 
 ```
 
