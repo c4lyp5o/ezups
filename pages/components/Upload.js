@@ -48,11 +48,11 @@ export default function Upload({ niceBytesYouHaveThere }) {
     setLoading(true);
     try {
       const theFile = await axios.post('/api/upload', formData, config);
-      console.log(theFile.data);
+      // console.log(theFile.data);
       setUploadInfo(theFile.data);
       setShowUploadSuccess(true);
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       setUploadError(err.response.data.error);
       setShowUploadError(true);
     }
@@ -63,7 +63,7 @@ export default function Upload({ niceBytesYouHaveThere }) {
     if (showUploadSuccess === true) {
       return (
         <div className='flex flex-col items-center justify-center'>
-          <div className='border-solid border-2 border-sky-500 w-fit p-2'>
+          <div className='border-solid border-2 border-sky-500 w-fit p-2 rounded-md'>
             <h3>Success!</h3>
             <p>
               <strong>File:</strong> {uploadInfo.file}
@@ -94,7 +94,7 @@ export default function Upload({ niceBytesYouHaveThere }) {
   if (loading) {
     return (
       <>
-        <div>
+        <div className='text-white'>
           <p>Uploading...</p>
           <progress className='mr-2' value={uploadProgress} max='100' />
           {uploadProgress}%
@@ -104,76 +104,83 @@ export default function Upload({ niceBytesYouHaveThere }) {
   }
 
   return (
-    <div className='p-3'>
-      <p>Upload files here.</p>
-      <br />
-      <form
-        className='flex flex-col items-center justify-center'
-        encType='multipart/form-data'
-        onSubmit={handleSubmit}
-      >
-        <input
-          required
-          type='file'
-          name='file'
-          onClick={(e) => {
-            setShowUploadError(false);
-            setShowUploadSuccess(false);
-          }}
-          onChange={(e) => setFile(e.target.files[0])}
-        />
-        <br />
-        <input
-          type='checkbox'
-          onChange={(e) =>
-            e.target.checked
-              ? setUploadUsePassword(true)
-              : setUploadUsePassword(false)
-          }
-        />
-        <p>Use Password?</p>
+    <form encType='multipart/form-data' onSubmit={handleSubmit}>
+      <div className='grid grid-flow-row gap-5 text-white'>
+        Upload files here.
+        <div>
+          <input
+            className='flex flex-col items-center justify-center'
+            required
+            type='file'
+            name='file'
+            onClick={(e) => {
+              setShowUploadError(false);
+              setShowUploadSuccess(false);
+            }}
+            onChange={(e) => setFile(e.target.files[0])}
+          />
+        </div>
+        <div>
+          <label htmlFor='checkbox'>
+            <input
+              type='checkbox'
+              className='mr-4'
+              onChange={(e) =>
+                e.target.checked
+                  ? setUploadUsePassword(true)
+                  : setUploadUsePassword(false)
+              }
+            />
+            Use Password?
+          </label>
+        </div>
         {uploadUsePassword && (
           <div className='flex flex-col items-center justify-center'>
-            <div className='border-solid border-2 border-sky-500 w-fit p-2'>
-              <label htmlFor='password'>Password:</label>
-              <input
-                required
-                key='upload-password'
-                type='password'
-                id='password'
-                name='password'
-                value={uploadPassword}
-                onChange={(e) => setUploadPassword(e.target.value)}
-              />
+            <div className='border-solid border-2 border-sky-500 w-fit p-2 rounded-md'>
+              <label htmlFor='password' className='mr-4'>
+                Password:
+                <input
+                  required
+                  key='upload-password'
+                  type='password'
+                  id='password'
+                  name='password'
+                  value={uploadPassword}
+                  onChange={(e) => setUploadPassword(e.target.value)}
+                />
+              </label>
             </div>
           </div>
         )}
-        <input
-          type='checkbox'
-          onChange={(e) =>
-            e.target.checked
-              ? setUploadDeleteAfterDownload(true)
-              : setUploadDeleteAfterDownload(false)
-          }
-        />
-        <p>Delete after download?</p>
-        <br />
+        <div>
+          <label htmlFor='dad'>
+            <input
+              type='checkbox'
+              className='mr-4'
+              onChange={(e) =>
+                e.target.checked
+                  ? setUploadDeleteAfterDownload(true)
+                  : setUploadDeleteAfterDownload(false)
+              }
+            />
+            Delete after download?
+          </label>
+        </div>
         <button
-          className='border-solid border-2 border-sky-500 p-1'
+          className='bg-lime-500 hover:bg-lime-700 text-white font-bold py-2 px-4 rounded mt-10'
           type='submit'
         >
           Upload
         </button>
-      </form>
-      <br />
-      {showUploadSuccess && <UploadSuccessful />}
-      {showUploadError && (
-        <div className='flex flex-col items-center justify-center'>
-          <div className='border-solid border-2 border-red-500 w-fit p-2'>
-            <p>Error: {uploadError}</p>
+        {showUploadSuccess && <UploadSuccessful />}
+        {showUploadError && (
+          <div className='flex flex-col items-center justify-center'>
+            <div className='border-solid border-2 border-red-500 w-fit p-2 rounded-md'>
+              <p>Error: {uploadError}</p>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </form>
   );
 }
