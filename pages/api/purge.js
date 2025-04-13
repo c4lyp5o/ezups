@@ -3,12 +3,11 @@ import prisma from '../../lib/prisma';
 import nextConnect from 'next-connect';
 import path from 'path';
 import fs from 'fs';
-import next from 'next';
 
 const cronAPI = nextConnect();
 cronAPI.use(multmidd);
 
-cronAPI.post(async (req, res) => {
+cronAPI.post(async (req, res, next) => {
   logmidd.info(`${req.method} ${req.url} Clearing all database and files`);
   const uploads = await prisma.uploads.findMany();
   logmidd.info(`${req.method} ${req.url} Found ${uploads.length} files`);

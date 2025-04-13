@@ -20,16 +20,26 @@ export default function Main() {
       <Head>
         <title>EZUPS</title>
         <link rel='icon' href='/favicon.ico' />
+        <meta charset='UTF-8' />
+        <meta name='description' content='NextJS Head component' />
+        <meta
+          name='keywords'
+          content='EZUPS, file, upload, download, storage'
+        />
+        <meta name='author' content='c4lyp5o' />
+        <meta name='viewport' content='width=device-width, initial-scale=1.0' />
       </Head>
       <Header />
-      <div className='grid grid-cols-2'>
-        <div>
-          <Upload niceBytesYouHaveThere={niceBytesYouHaveThere} />
+      <main className='flex flex-col items-center justify-center w-full h-screen bg-black'>
+        <div className='m-4 text-white font-mono'>
+          <h1 className='text-6xl font-bold'>EZUPS</h1>
+          <p className='text-2xl'>upload anything</p>
         </div>
-        <div>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-5 items-center justify-center w-full md:w-3/4 h-full'>
+          <Upload niceBytesYouHaveThere={niceBytesYouHaveThere} />
           <Download niceBytesYouHaveThere={niceBytesYouHaveThere} />
         </div>
-      </div>
+      </main>
       <Footer />
     </div>
   );

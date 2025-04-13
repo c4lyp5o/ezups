@@ -1,12 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -14,11 +11,11 @@ model Uploads {
   id              Int      @id @default(autoincrement())
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  filename        String   @db.VarChar(255)
-  path            String   @db.VarChar(255)
+  filename        String   
+  path            String   
   size            Int      
-  mimetype        String   @db.VarChar(255)
-  password        String   @db.VarChar(255)
-  key             String   @db.VarChar(255)
-  dad             String   @db.VarChar(255)
+  mimetype        String   
+  password        String   
+  key             String   
+  dad             String   
 }

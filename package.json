@@ -3,21 +3,23 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "genenv": "node ./scripts/envGenerator.js",
+    "gendb": "npx prisma migrate dev --name init",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "docker": "node ./scripts/envGenerator.js && docker build . -t ezups"
   },
   "author": "c4lyp5o",
   "license": "MIT",
   "dependencies": {
-    "@prisma/client": "^3.15.1",
+    "@prisma/client": "^4.2.1",
     "axios": "^0.27.2",
     "log4js": "^6.5.2",
     "multer": "^1.4.5-lts.1",
     "next": "12.1.6",
     "next-connect": "^0.12.2",
-    "node-cron": "^3.0.1",
     "react": "18.1.0",
     "react-dom": "18.1.0",
     "simple-crypto-js": "^3.0.1"
@@ -27,7 +29,7 @@
     "eslint": "8.17.0",
     "eslint-config-next": "12.1.6",
     "postcss": "^8.4.14",
-    "prisma": "^3.15.1",
+    "prisma": "^4.2.1",
     "tailwindcss": "^3.1.2"
   }
 }

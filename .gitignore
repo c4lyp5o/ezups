@@ -37,4 +37,11 @@ yarn-error.log*
 # logs
 everything.log
 
-# uploads
+# vscode stuff
+.vscode
+
+# migrations file
+/prisma/migrations
+
+# db file
+/db/ezups.db

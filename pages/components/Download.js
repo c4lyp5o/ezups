@@ -7,6 +7,7 @@ export default function Download({ niceBytesYouHaveThere }) {
   const downloadPassword = useRef('');
   const filename = useRef('');
   const size = useRef('');
+  const deleteAfterDownload = useRef(false);
   const downloadError = useRef('');
   const [downloadUsePassword, setDownloadUsePassword] = useState(false);
   const [showDownloadSuccess, setShowDownloadSuccess] = useState(false);
@@ -34,8 +35,10 @@ export default function Download({ niceBytesYouHaveThere }) {
         password: downloadPassword.current,
         API_KEY: process.env.NEXT_PUBLIC_API_HASH,
       });
+      console.log(theFile.data);
       filename.current = theFile.data.file;
       size.current = theFile.data.size;
+      deleteAfterDownload.current = theFile.data.dad;
       const theBits = await axios.get(
         `/api/download?key=${key.current}&password=${downloadPassword.current}`,
         {
@@ -54,7 +57,7 @@ export default function Download({ niceBytesYouHaveThere }) {
     if (showDownloadSuccess) {
       return (
         <div className='flex flex-col items-center justify-center'>
-          <div className='border-solid border-2 border-sky-500 w-fit p-2'>
+          <div className='border-solid border-2 border-sky-500 w-fit p-2 rounded-md'>
             <h3>Success!</h3>
             <p>
               <strong>File:</strong> {filename.current}
@@ -62,6 +65,11 @@ export default function Download({ niceBytesYouHaveThere }) {
             <p>
               <strong>Size:</strong> {niceBytesYouHaveThere(size.current)}
             </p>
+            {deleteAfterDownload.current == 'true' && (
+              <p>
+                <strong>Deleting your file after download</strong>
+              </p>
+            )}
           </div>
         </div>
       );
@@ -72,7 +80,7 @@ export default function Download({ niceBytesYouHaveThere }) {
     if (showDownloadError) {
       return (
         <div className='flex flex-col items-center justify-center'>
-          <div className='border-solid border-2 border-red-500 w-fit p-2'>
+          <div className='border-solid border-2 border-red-500 w-fit p-2 rounded-md'>
             <h3>Something went wrong!</h3>
             <p>
               <strong>Reason:</strong> {downloadError.current}
@@ -84,55 +92,52 @@ export default function Download({ niceBytesYouHaveThere }) {
   }
 
   return (
-    <div className='p-3'>
-      <h1>Download files here.</h1>
-      <br />
-      <form
-        className='flex flex-col items-center justify-center'
-        onSubmit={handleSubmit}
-      >
+    <form onSubmit={handleSubmit}>
+      <div className='grid grid-flow-row gap-5 text-white'>
+        Download files here.
         <input
           required
-          className='border-solid border-2 border-sky-500'
+          className='border-solid border-2 border-sky-500 text-black p-2 rounded-md'
           type='text'
           onChange={(e) => (key.current = e.target.value)}
           placeholder='Enter key'
         />
-        <br />
-        <input
-          type='checkbox'
-          onChange={(e) =>
-            e.target.checked
-              ? setDownloadUsePassword(true)
-              : setDownloadUsePassword(false)
-          }
-        />
-        <p>Use Password?</p>
+        <label htmlFor='password'>
+          <input
+            type='checkbox'
+            className='mr-4'
+            onChange={(e) =>
+              e.target.checked
+                ? setDownloadUsePassword(true)
+                : setDownloadUsePassword(false)
+            }
+          />
+          Use Password?
+        </label>
         {downloadUsePassword && (
           <div className='flex flex-col items-center justify-center'>
-            <div className='border-solid border-2 border-sky-500 w-fit p-2'>
-              <label htmlFor='password'>Password:</label>
-              <input
-                required
-                type='password'
-                id='downloadpassword'
-                name='downloadpassword'
-                onChange={(e) => (downloadPassword.current = e.target.value)}
-              />
+            <div className='border-solid border-2 border-sky-500 w-fit p-2 rounded-md'>
+              <label htmlFor='password' className='mr-4'>
+                <input
+                  required
+                  type='password'
+                  className='text-black p-2 rounded-md mr-4'
+                  onChange={(e) => (downloadPassword.current = e.target.value)}
+                />
+                Password:
+              </label>
             </div>
           </div>
         )}
-        <br />
         <button
-          className='border-solid border-2 border-sky-500 p-1'
+          className='bg-lime-500 hover:bg-lime-700 text-white font-bold py-2 px-4 rounded mt-10'
           type='submit'
         >
           Download
         </button>
-      </form>
-      <br />
-      <div>{showDownloadSuccess && <DownloadSuccessful />}</div>
-      <div>{showDownloadError && <DonwloadFailure />}</div>
-    </div>
+        {showDownloadSuccess && <DownloadSuccessful />}
+        {showDownloadError && <DonwloadFailure />}
+      </div>
+    </form>
   );
 }
