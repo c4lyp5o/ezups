@@ -1,8 +1,5 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# .env
-.env
-
 # dependencies
 /node_modules
 /.pnp
@@ -10,13 +7,6 @@
 
 # testing
 /coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
 
 # misc
 .DS_Store
@@ -30,18 +20,10 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
 
-# vercel
-.vercel
+# local sqlite db
+database/*.sqlite
 
 # logs
-everything.log
-
-# vscode stuff
-.vscode
-
-# migrations file
-/prisma/migrations
-
-# db file
-/db/ezups.db
+logs/*.log
