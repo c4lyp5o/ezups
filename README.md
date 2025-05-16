@@ -28,7 +28,7 @@ A Dockerfile is included. The database is created automatically in the container
 
 ```bash
 docker build . -t ezups
-docker run -p <desired host port>:3000 --name ezups ezups:latest
+docker run -p <desired host port>:5000 --name ezups ezups:latest
 ```
 
 ## Features
