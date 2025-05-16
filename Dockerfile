@@ -1,44 +1,58 @@
-# pull the Node.js Docker image
-FROM node:alpine
+# Stage 1: Build Stage (client build)
+FROM oven/bun:1.2.13-alpine AS builder
 
-# update the package index
-RUN apk update
+WORKDIR /app
 
-# add busybox initscripts to the PATH
-RUN apk add --no-cache busybox-initscripts curl openrc tzdata
+# Install root dependencies (Express etc.)
+COPY package*.json ./
+RUN bun install
 
-# start cron daemon
-RUN rc-update add crond
+# Copy client separately and install client dependencies + build
+COPY client ./client
+WORKDIR /app/client
+RUN bun install && bun run build
 
-# set timezone data
+# Move built files to /app/public in the builder stage
+RUN mkdir -p /app/public && mv ../public/* /app/public/
+
+# Return to root app dir
+WORKDIR /app
+
+# Stage 2: Production Stage
+FROM oven/bun:1.2.13-alpine
+
+# Install for alpine
+RUN apk update --no-cache && \
+    apk add --no-cache curl tzdata
+
+# Set timezone data
 ENV TZ=Asia/Kuala_Lumpur
 
-# create the directory inside the container
-WORKDIR /usr/src/app
+# Set working directory
+WORKDIR /app
 
-# copy the package.json files from local machine to the workdir in container
+# Install only production dependencies
 COPY package*.json ./
+RUN bun install --production
 
-# run npm install in our local machine
-RUN yarn install
-
-# copy the generated modules and all other files to the container
+# Copy backend source code (everything except what's ignored)
 COPY . .
 
-# migrate models to database
-RUN yarn prisma migrate dev --name init
+# Copy built public files from builder
+COPY --from=builder /app/public /app/public
 
-# make script executable
-RUN chmod +x ./scripts/purge.sh
+# Copy purge script
+COPY /utils/purge.sh /etc/periodic/daily/purge.sh
 
-# add cronjob
-RUN echo "0 1 * * * /bin/ash /usr/src/app/scripts/purge.sh" >> /var/spool/cron/crontabs/root
+# Set permissions for the purge script
+RUN chmod +x /etc/periodic/daily/purge.sh
 
-# our app is running on port 3000 within the container, so need to expose it
-EXPOSE 3000
+# Expose your server port
+EXPOSE 5000
 
-# create optimized build for production
-RUN yarn build
+# Add a health check to ensure the container is running properly
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:5000/api/v1/healthcheck || exit 1
 
-# the command that starts our app
-CMD crond && yarn start
+# Start your app
+CMD ["bun", "start"]
