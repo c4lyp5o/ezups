@@ -1,5 +1,5 @@
-import { Database } from 'bun:sqlite';
-import logger from '@/utils/logger';
+import { Database } from "bun:sqlite";
+import logger from "@/utils/logger";
 
 let dbInstance;
 
@@ -9,12 +9,12 @@ let dbInstance;
  * @returns {Database} The database instance.
  */
 const initializeDatabase = async () => {
-  if (!dbInstance) {
-    const dbPath = process.env.DB_PATH || './database/ezups.sqlite';
-    dbInstance = new Database(dbPath, { create: true });
+	if (!dbInstance) {
+		const dbPath = process.env.DB_PATH || "./database/ezups.sqlite";
+		dbInstance = new Database(dbPath, { create: true });
 
-    try {
-      dbInstance.exec(`
+		try {
+			dbInstance.exec(`
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
@@ -31,18 +31,18 @@ CREATE TABLE IF NOT EXISTS uploads (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 `);
-    } catch (error) {
-      console.error('Error creating tables:', error.message);
-      process.exit(1);
-    }
-  }
+		} catch (error) {
+			console.error("Error creating tables:", error.message);
+			process.exit(1);
+		}
+	}
 
-  logger.info(
-    `[db] Database initialized at ${
-      process.env.DB_PATH || './database/ezups.sqlite'
-    }`
-  );
-  return dbInstance;
+	logger.info(
+		`[db] Database initialized at ${
+			process.env.DB_PATH || "./database/ezups.sqlite"
+		}`,
+	);
+	return dbInstance;
 };
 
 export default initializeDatabase;
