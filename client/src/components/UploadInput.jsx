@@ -146,6 +146,9 @@ const UploadInput = ({ allInfo, setAllInfo, loading, handleSubmit }) => {
 					Clear
 				</button>
 			</div>
+			<div className="w-full text-xs text-gray-600 text-left mt-1">
+				Maximum file size is 100MB.
+			</div>
 		</div>
 	);
 };
