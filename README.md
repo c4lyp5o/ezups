@@ -48,7 +48,7 @@ docker run -p <desired host port>:5000 --name ezups ezups:latest
 
 ## Tech Stack
 
-- **Backend:** Bun, Express-style routing, SQLite, Multer for file uploads
+- **Backend:** Bun, Elysia, SQLite (bun:sqlite), native `request.formData()` uploads (no multer)
 - **Frontend:** React (Vite), Tailwind CSS
 - **Other:** Docker support, daily purge script
 

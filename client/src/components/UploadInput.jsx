@@ -1,37 +1,45 @@
 import { useState, useRef, useCallback } from "react";
+import Spinner from "./Spinner";
 
 const UploadInput = ({ allInfo, setAllInfo, loading, handleSubmit }) => {
 	const [showPassword, setShowPassword] = useState(false);
+	const [dragging, setDragging] = useState(false);
 	const fileInputRef = useRef(null);
+
+	const setFile = useCallback(
+		(file) => setAllInfo((prev) => ({ ...prev, file })),
+		[setAllInfo],
+	);
 
 	const handleDrop = (event) => {
 		event.preventDefault();
 		event.stopPropagation();
-		if (event.dataTransfer.files?.[0]) {
-			setAllInfo((prev) => ({ ...prev, file: event.dataTransfer.files[0] }));
-		}
+		setDragging(false);
+		if (event.dataTransfer.files?.[0]) setFile(event.dataTransfer.files[0]);
 	};
 
 	const handleDragOver = (event) => {
 		event.preventDefault();
 		event.stopPropagation();
+		setDragging(true);
+	};
+
+	const handleDragLeave = (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+		setDragging(false);
 	};
 
 	const handleFileChange = useCallback(
 		(event) => {
-			if (event.target.files?.[0]) {
-				setAllInfo((prev) => ({ ...prev, file: event.target.files[0] }));
-			}
+			if (event.target.files?.[0]) setFile(event.target.files[0]);
 		},
-		[setAllInfo],
+		[setFile],
 	);
 
 	const handlePasswordChange = useCallback(
 		(event) => {
-			setAllInfo((prev) => ({
-				...prev,
-				password: event.target.value,
-			}));
+			setAllInfo((prev) => ({ ...prev, password: event.target.value }));
 		},
 		[setAllInfo],
 	);
@@ -52,6 +60,8 @@ const UploadInput = ({ allInfo, setAllInfo, loading, handleSubmit }) => {
 			password: "",
 			deleteAfterDownload: false,
 			key: "",
+			filename: "",
+			size: 0,
 		});
 		if (fileInputRef.current) fileInputRef.current.value = "";
 	}, [setAllInfo]);
@@ -59,95 +69,111 @@ const UploadInput = ({ allInfo, setAllInfo, loading, handleSubmit }) => {
 	const handleShowPasswordToggle = () => setShowPassword((prev) => !prev);
 
 	return (
-		<div className="flex flex-col items-center justify-center p-3 bg-gray-100 border border-gray-300 rounded-lg shadow-md w-11/12 mx-auto">
-			<h2 className="text-lg font-semibold text-blue-700 mb-2">Upload</h2>
-			<button
-				type="button"
-				className={`w-full h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer mb-2 transition-colors duration-150 ${
-					allInfo.file
-						? "border-blue-500 bg-blue-50"
-						: "border-gray-300 bg-white"
-				}`}
+		<div className="w-full space-y-3">
+			<div
+				role="button"
+				tabIndex={0}
+				onClick={() => fileInputRef.current?.click()}
 				onDrop={handleDrop}
 				onDragOver={handleDragOver}
-				onClick={() => fileInputRef.current?.click()}
-				aria-label="Drop file here or click to select"
-				style={{ outline: "none" }}
+				onDragLeave={handleDragLeave}
+				onKeyDown={(event) => {
+					if (event.key === "Enter" || event.key === " ") {
+						event.preventDefault();
+						fileInputRef.current?.click();
+					}
+				}}
+				className={`w-full border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors ${
+					dragging
+						? "border-accent-500 bg-accent-50"
+						: "border-stone-200 hover:border-stone-300 bg-stone-50/50"
+				}`}
 			>
-				{allInfo.file ? (
-					<span className="text-gray-700 font-medium">{allInfo.file.name}</span>
-				) : (
-					<span className="text-gray-500">
-						Drop file here or click to select
-					</span>
-				)}
 				<input
-					type="file"
 					ref={fileInputRef}
+					type="file"
 					className="hidden"
 					onChange={handleFileChange}
-					aria-label="File input"
-					multiple={false}
-				/>
-			</button>
-			<div className="relative w-full">
-				<input
-					type={showPassword ? "text" : "password"}
-					className="w-full p-1 text-base text-gray-700 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 pr-12"
-					value={allInfo.password}
-					onChange={handlePasswordChange}
-					placeholder="Password (optional)"
-					aria-label="Password (optional)"
-					autoComplete="off"
 					disabled={loading}
+					aria-label="Choose a file"
 				/>
-				<button
-					type="button"
-					className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-gray-600 bg-gray-200 rounded px-2 py-1 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-					onClick={handleShowPasswordToggle}
-					disabled={loading || allInfo.password === ""}
-					tabIndex={-1}
-					aria-pressed={showPassword}
-					aria-label={showPassword ? "Hide password" : "Show password"}
-				>
-					{showPassword ? "Hide" : "Show"}
-				</button>
+				{allInfo.file ? (
+					<p className="text-sm font-mono text-stone-800 break-all">
+						{allInfo.file.name}
+						<span className="text-stone-400">
+							{" "}
+							· {(allInfo.file.size / 1024).toFixed(1)} KB
+						</span>
+					</p>
+				) : (
+					<>
+						<p className="text-sm font-medium text-stone-600">
+							Drop a file here
+						</p>
+						<p className="mt-1 text-xs text-stone-400">
+							or click to browse · max 100MB
+						</p>
+					</>
+				)}
 			</div>
-			<div className="flex items-center mt-4 mb-4">
+
+			<div>
+				<label
+					htmlFor="upload-password"
+					className="block text-xs font-medium text-stone-500 mb-1"
+				>
+					Password <span className="font-normal text-stone-400">(optional)</span>
+				</label>
+				<div className="relative">
+					<input
+						id="upload-password"
+						type={showPassword ? "text" : "password"}
+						className="w-full px-3 py-2 pr-16 text-sm font-mono text-stone-800 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-400/40 focus:border-accent-500 transition-shadow"
+						placeholder="Lock this file"
+						value={allInfo.password}
+						onChange={handlePasswordChange}
+						disabled={loading}
+					/>
+					<button
+						type="button"
+						onClick={handleShowPasswordToggle}
+						className="absolute inset-y-0 right-0 px-3 text-[11px] font-semibold tracking-wide text-stone-400 hover:text-accent-600 transition-colors"
+						aria-label={showPassword ? "Hide password" : "Show password"}
+					>
+						{showPassword ? "HIDE" : "SHOW"}
+					</button>
+				</div>
+			</div>
+
+			<label className="flex items-center gap-2 text-sm text-stone-600 select-none cursor-pointer">
 				<input
 					type="checkbox"
-					className="mr-2 h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-					onChange={handleDeleteAfterDownload}
 					checked={allInfo.deleteAfterDownload}
-					aria-checked={allInfo.deleteAfterDownload}
-					aria-label="Delete After Download"
+					onChange={handleDeleteAfterDownload}
+					disabled={loading}
+					className="w-4 h-4 rounded accent-accent-600"
 				/>
-				<label htmlFor="deleteAfterDownload" className="text-gray-700">
-					Delete after download
-				</label>
-			</div>
-			<div className="flex space-x-2 w-full">
+				Delete after download
+			</label>
+
+			<div className="flex gap-2 pt-1">
 				<button
 					type="button"
-					className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-150 disabled:opacity-50"
 					onClick={handleSubmit}
 					disabled={loading}
-					aria-label="Upload File"
-					aria-disabled={loading}
+					className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-accent-600 hover:bg-accent-700 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
 				>
-					{loading ? "Uploading..." : "Upload"}
+					{loading ? <Spinner /> : null}
+					{loading ? "Uploading…" : "Upload file"}
 				</button>
 				<button
 					type="button"
-					className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors duration-150"
 					onClick={handleClear}
-					aria-label="Clear File"
+					disabled={loading}
+					className="px-4 py-2.5 text-sm font-medium text-stone-600 bg-white border border-stone-300 hover:bg-stone-50 rounded-lg transition-colors disabled:opacity-60"
 				>
 					Clear
 				</button>
-			</div>
-			<div className="w-full text-xs text-gray-600 text-left mt-1">
-				Maximum file size is 100MB.
 			</div>
 		</div>
 	);

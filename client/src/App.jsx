@@ -23,7 +23,6 @@ const App = () => {
 			<BrowserRouter>
 				<Routes>
 					<Route index element={<Landing />} />
-
 					<Route path="*" element={<NotFound />} />
 				</Routes>
 			</BrowserRouter>

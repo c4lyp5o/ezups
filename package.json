@@ -11,17 +11,15 @@
 		"dev-client": "cd client && bun run dev",
 		"dev": "conc \"bun dev-client\" \"bun dev-server\"",
 		"build-client": "cd client && bun run build",
-		"start": "NODE_ENV=production bun server.js"
+		"start": "NODE_ENV=production bun server.js",
+		"test": "bun test"
 	},
 	"author": "c4lyp5o",
 	"license": "MIT",
 	"dependencies": {
-		"cors": "^2.8.5",
+		"@elysiajs/static": "^1.4.10",
 		"deadslog": "^1.2.0",
-		"dotenv": "^16.5.0",
-		"express": "^5.1.0",
-		"express-rate-limit": "^7.5.0",
-		"multer": "^1.4.5-lts.2"
+		"elysia": "^1.4.29"
 	},
 	"devDependencies": {
 		"concurrently": "^9.1.2"

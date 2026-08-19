@@ -1,19 +1,15 @@
-import { Router } from "express";
-import limiter from "@/middlewares/rateLimiter.js";
-import uploadSystem from "@/middlewares/multer";
+import { Elysia } from "elysia";
+import { rateLimit } from "../middlewares/rateLimit.js";
+import { localAuth } from "../middlewares/localAuth.js";
 import {
 	healthCheck,
 	uploadFile,
 	downloadFile,
 	purgeEverything,
-} from "@/controllers/httpControllers.js";
-import localAuth from "@/middlewares/localAuth.js";
+} from "../controllers/httpControllers.js";
 
-const router = Router();
-
-router.get("/healthcheck", localAuth, healthCheck);
-router.post("/upload", limiter, uploadSystem, uploadFile);
-router.get("/download", limiter, downloadFile);
-router.delete("/purge", localAuth, purgeEverything);
-
-export default router;
+export const HttpRoutes = new Elysia({ prefix: "/api/v1" })
+	.get("/healthcheck", healthCheck, { beforeHandle: [localAuth] })
+	.post("/upload", uploadFile, { beforeHandle: [rateLimit] })
+	.get("/download", downloadFile, { beforeHandle: [rateLimit] })
+	.delete("/purge", purgeEverything, { beforeHandle: [localAuth] });

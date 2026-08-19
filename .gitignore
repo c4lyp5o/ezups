@@ -1,9 +1,5 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
-/.pnp
-.pnp.js
 
 # testing
 /coverage
@@ -23,7 +19,15 @@ yarn-error.log*
 .env
 
 # local sqlite db
-database/*.sqlite
+db/*.sqlite
+db/*.sqlite-*
+
+# uploaded files (keep only the placeholder)
+/uploads/*
+!/uploads/delete.me
+
+# built client output
+/public
 
 # logs
 logs/*.log

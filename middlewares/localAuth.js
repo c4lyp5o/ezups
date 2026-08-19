@@ -1,11 +1,8 @@
-const localAuth = (req, res, next) => {
-	const rawIp = req.connection.remoteAddress?.replace("::ffff:", "");
-
-	if (rawIp === "127.0.0.1" || rawIp === "::1") {
-		return next();
-	}
-
-	res.status(403).json({ message: "Forbidden" });
-};
-
-export default localAuth;
+// Restrict an endpoint to requests originating on the same machine
+// (127.0.0.1 / ::1). Used for healthcheck + purge.
+export function localAuth({ request, server, set }) {
+	const ip = (server?.requestIP?.(request)?.address || "").replace("::ffff:", "");
+	if (ip === "127.0.0.1" || ip === "::1") return;
+	set.status = 403;
+	return { message: "Forbidden" };
+}

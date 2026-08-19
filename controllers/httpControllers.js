@@ -1,110 +1,145 @@
-import crypto from "node:crypto";
-import { readFile, unlink } from "node:fs/promises";
+import { randomBytes } from "node:crypto";
+import { writeFile, readFile, unlink } from "node:fs/promises";
 import path from "node:path";
-import initializeDatabase from "@/database/sqlite";
 import {
-	hasCache,
-	setCache,
-	deleteCache,
-	clearCache,
-} from "@/database/cache.js";
-import logger from "@/utils/logger.js";
+	UPLOADS_DIR,
+	KEY_LENGTH,
+	MAX_UPLOAD_SIZE,
+	MAX_PASSWORD_LENGTH,
+	MAX_FILENAME_LENGTH,
+} from "../config.js";
+import {
+	createUpload,
+	findUploadByKey,
+	deleteUploadByKey,
+	allUploads,
+	clearUploads,
+} from "../database/sqlite.js";
+import logger from "../utils/logger.js";
 
-const ezupsDb = await initializeDatabase();
+const healthCheck = () => ({ message: "ok" });
 
-const healthCheck = (_req, res) => {
-	res.status(200).json({ message: "ok" });
-};
+// Bun-native upload: read the multipart body straight off the Fetch request
+// and write the file to disk with Bun/fs -- no multer, no upload middleware.
+const uploadFile = async ({ request, set }) => {
+	const form = await request.formData();
+	const file = form.get("file");
+	const password = String(form.get("password") ?? "").slice(
+		0,
+		MAX_PASSWORD_LENGTH,
+	);
+	const deleteAfterDownload =
+		form.get("deleteAfterDownload") === "true" ||
+		form.get("deleteAfterDownload") === "on" ||
+		form.get("deleteAfterDownload") === "1";
 
-const uploadFile = async (req, res) => {
-	const [file] = req.files;
-	const { password = "", deleteAfterDownload = "false" } = req.body || {};
+	if (!(file instanceof File)) {
+		set.status = 400;
+		return { message: "No file selected" };
+	}
+	if (file.size > MAX_UPLOAD_SIZE) {
+		set.status = 413;
+		return { message: "File too large (max 100MB)" };
+	}
 
-	if (!file) return res.status(400).json({ message: "Bad Request" });
+	const original =
+		path.basename(String(file.name || "upload")).slice(0, MAX_FILENAME_LENGTH) ||
+		"upload";
 
-	let key;
+	// Unique key, collision-guarded against the DB's UNIQUE constraint.
+	let key = "";
+	let storagePath = "";
 	do {
-		key = crypto.randomBytes(3).toString("hex");
-		if (hasCache(key)) {
-			logger.warn(
-				`[cache] Key ${key} already exists in cache. Generating a new key.`,
-			);
-		}
-	} while (hasCache(key));
-	setCache(key, true);
-	logger.info(`[cache] Key ${key} added to cache.`);
+		key = randomBytes(KEY_LENGTH).toString("hex");
+		storagePath = path.join(UPLOADS_DIR, `${key}-${original}`);
+	} while (findUploadByKey.get(key));
 
-	ezupsDb
-		.prepare(
-			"INSERT INTO uploads (key, file, password, deleteAfterDownload) VALUES (?, ?, ?, ?)",
-		)
-		.run(key, file.path, password, deleteAfterDownload === "true");
+	await writeFile(storagePath, new Uint8Array(await file.arrayBuffer()));
 
-	res.status(201).json({ key, password });
+	createUpload.run(
+		key,
+		storagePath,
+		original,
+		password,
+		deleteAfterDownload ? 1 : 0,
+	);
+
+	logger.info(
+		`[upload] key=${key} name=${original} size=${file.size} dad=${deleteAfterDownload}`,
+	);
+	set.status = 201;
+	return { key, password, filename: original, size: file.size };
 };
 
-const downloadFile = async (req, res) => {
-	const { key, password } = req.query || {};
+const downloadFile = async ({ query, set }) => {
+	const { key, password = "" } = query || {};
 
-	if (!key) return res.status(400).json({ message: "Bad Request" });
+	if (!key) {
+		set.status = 400;
+		return { message: "Bad Request" };
+	}
 
-	if (!hasCache(key)) return res.status(404).json({ message: "Not Found" });
-
-	const result = ezupsDb
-		.prepare("SELECT * FROM uploads WHERE key = ?")
-		.get(key);
-
-	if (!result) return res.status(404).json({ message: "Not Found" });
-
+	const result = findUploadByKey.get(key);
+	if (!result) {
+		set.status = 404;
+		return { message: "Not Found" };
+	}
 	if (result.password && result.password !== password) {
-		return res.status(403).json({ message: "Unauthorized" });
+		set.status = 403;
+		return { message: "Unauthorized" };
 	}
 
 	let binaryData;
 	try {
 		binaryData = await readFile(result.file);
-	} catch (err) {
+	} catch {
 		logger.error(`[fs] File not found: ${result.file}`);
-		return res.status(410).json({ message: "File no longer exists" });
+		set.status = 410;
+		return { message: "File no longer exists" };
 	}
 
+	// Delete-after-download: nuke the DB row + file before serving so the file
+	// is gone even if the connection drops mid-transfer.
 	if (result.deleteAfterDownload) {
-		ezupsDb.prepare("DELETE FROM uploads WHERE key = ?").run(key);
-		deleteCache(key);
-		logger.info(`[cache] Key ${key} deleted from cache.`);
+		deleteUploadByKey.run(key);
+		logger.info(`[download] key=${key} deleted after download`);
 		try {
 			await unlink(result.file);
-			logger.info(`[fs] File ${result.file} deleted from filesystem.`);
 		} catch (error) {
-			logger.error(`[fs] Error deleting file ${result.file}: ${error.message}`);
+			logger.error(
+				`[fs] Error deleting file ${result.file}: ${error.message}`,
+			);
 		}
 	}
 
-	res.setHeader("Content-Type", "application/octet-stream");
-	res.setHeader(
-		"Content-Disposition",
-		`attachment; filename=\"${path.basename(result.file)}\"`,
-	);
-	res.setHeader("Content-Length", binaryData.length);
-	res.setHeader("Cache-Control", "no-store");
-	res.status(200).send(binaryData);
+	const filename = result.original_name || path.basename(result.file);
+	set.status = 200;
+	return new Response(new Uint8Array(binaryData), {
+		status: 200,
+		headers: {
+			"Content-Type": "application/octet-stream",
+			"Content-Disposition": `attachment; filename="${filename}"`,
+			"Content-Length": String(binaryData.length),
+			"Cache-Control": "no-store",
+		},
+	});
 };
 
-const purgeEverything = async (_req, res) => {
-	const allFiles = ezupsDb.prepare("SELECT * FROM uploads").all();
-	for (const singleFile in allFiles) {
+// Wipe every uploaded file + DB row. Fixed: the old loop iterated the array
+// but never used its elements, so it threw instead of purging.
+const purgeEverything = async ({ set }) => {
+	const files = allUploads.all();
+	for (const record of files) {
 		try {
-			await unlink(singleFile.file);
-			logger.info(`[fs] File ${uploaded.file} deleted from filesystem.`);
+			await unlink(record.file);
+			logger.info(`[fs] File ${record.file} deleted from filesystem.`);
 		} catch (error) {
-			`[fs] Error deleting file ${uploaded.file}: ${error.message}`;
+			logger.error(`[fs] Error deleting file ${record.file}: ${error.message}`);
 		}
 	}
-	ezupsDb.prepare("DELETE FROM uploads").run();
-	logger.info("[db] All keys deleted from database.");
-	clearCache();
-	logger.info("[cache] All keys deleted from cache.");
-	res.status(200).json({ message: "ok" });
+	clearUploads.run();
+	logger.info(`[purge] Removed ${files.length} upload(s) from database.`);
+	return { message: "ok", removed: files.length };
 };
 
 export { healthCheck, uploadFile, downloadFile, purgeEverything };
