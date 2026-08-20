@@ -28,20 +28,11 @@ const toFormData = (fields = {}, file = null) => {
 };
 
 describe("EZUPS API", () => {
-	it("GET /api/v1/healthcheck - gated to loopback (403 for synthetic)", async () => {
-		// localAuth only lets real loopback sockets through (Docker HEALTHCHECK
-		// curls this from 127.0.0.1). Synthetic app.handle() requests have no
-		// real socket, so they're correctly rejected — not a bug.
+	it("GET /api/v1/healthcheck - public liveness probe (200)", async () => {
+		// healthcheck is intentionally public (returns only {message:"ok"}).
+		// It cannot be loopback-gated because Docker's HEALTHCHECK runs inside
+		// the container where requestIP reports the container IP, not 127.0.0.1.
 		const res = await api("http://localhost/api/v1/healthcheck");
-		expect(res.status).toBe(403);
-	});
-
-	it("GET /api/v1/healthcheck - real loopback socket passes (200)", async () => {
-		// The app listens on PORT (5000) when server.js is imported; a real
-		// loopback fetch is the true Docker probe path.
-		const addr = app.server?.address;
-		const port = typeof addr === "string" ? addr : app.server?.port;
-		const res = await fetch(`http://127.0.0.1:${port}/api/v1/healthcheck`);
 		expect(res.status).toBe(200);
 	});
 
@@ -121,6 +112,15 @@ describe("EZUPS API", () => {
 			{ method: "GET" },
 		);
 		expect(second.status).toBe(404);
+	});
+
+	it("DELETE /api/v1/purge - loopback-gated (synthetic network 403)", async () => {
+		// purge is destructive, so it stays loopback-only. A synthetic
+		// app.handle() request has no loopback socket -> rejected.
+		const res = await api("http://localhost/api/v1/purge", {
+			method: "DELETE",
+		});
+		expect(res.status).toBe(403);
 	});
 });
 
