@@ -1,7 +1,7 @@
 import UploadFile from "../components/UploadFile";
 import DownloadFile from "../components/DownloadFile";
 
-const Landing = () => {
+const Landing = ({ theme, onToggleTheme }) => {
 	return (
 		<div className="min-h-screen flex flex-col">
 			<header className="sticky top-0 z-10 bg-paper/85 backdrop-blur border-b border-stone-200/80">
@@ -16,6 +16,14 @@ const Landing = () => {
 					<span className="text-xs text-stone-400 font-mono hidden sm:inline">
 						upload anything
 					</span>
+					<button
+						type="button"
+						onClick={onToggleTheme}
+						aria-label="Toggle theme"
+						className="px-3 py-1.5 text-xs font-medium text-stone-600 bg-white border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors"
+					>
+						{theme === "dark" ? "☀ Light" : "🌙 Dark"}
+					</button>
 				</div>
 			</header>
 

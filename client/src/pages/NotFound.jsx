@@ -1,4 +1,4 @@
-const NotFound = () => {
+const NotFound = ({ theme, onToggleTheme }) => {
 	return (
 		<div className="min-h-screen flex flex-col items-center justify-center bg-paper text-center px-4">
 			<p className="font-mono text-[7rem] sm:text-[10rem] leading-none font-semibold text-stone-200 select-none">
@@ -17,6 +17,14 @@ const NotFound = () => {
 			>
 				← Back home
 			</a>
+			<button
+				type="button"
+				onClick={onToggleTheme}
+				aria-label="Toggle theme"
+				className="mt-6 px-3 py-1.5 text-xs font-medium text-stone-600 bg-white border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors"
+			>
+				{theme === "dark" ? "☀ Light" : "🌙 Dark"}
+			</button>
 		</div>
 	);
 };

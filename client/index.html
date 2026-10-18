@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
@@ -9,6 +9,17 @@
       content="EZUPS — upload anything. Instant, self-hosted file sharing."
     />
     <meta name="theme-color" content="#faf9f7" />
+    <script>
+    	(function () {
+    		try {
+    			var t = localStorage.getItem("theme");
+    			if (t !== "light") document.documentElement.classList.add("dark");
+    			else document.documentElement.classList.remove("dark");
+    		} catch (e) {
+    			document.documentElement.classList.add("dark");
+    		}
+    	})();
+    </script>
     <title>EZUPS — upload anything</title>
   </head>
   <body>
