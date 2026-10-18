@@ -1,6 +1,6 @@
 # EZ-UPS
 
-In the name of God, the merciful, the gracious
+In the name of Allah, the most merciful, the most gracious
 
 ## What is it
 
@@ -8,91 +8,54 @@ Simple file uploading and downloading utility tool. Ever tried uploading a file 
 
 ## Getting Started
 
-First, generate your ENV file.
+1. **Install dependencies:**
 
 ```bash
-
-$ npm run genenv
-
-# or
-
-$ yarn genenv
-
+bun run install-deps
 ```
 
-PRO-TIP: genenv will ask for your name. Your name is used to personalize the site.
-
-Second, generate the sqlite database.
+4. **Run the server:**
 
 ```bash
-
-$ npm run gendb
-
-# or
-
-$ yarn gendb
-
+bun dev
 ```
 
-Third, install dependencies.
-
-```bash
-
-$ npm install
-
-# or
-
-$ yarn install
-
-```
-
-Then, run the server.
-
-```bash
-
-$ npm run dev
-
-# or
-
-$ yarn dev
-
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Running as a Docker Container
 
-I have included a Dockerfile to run the server as a Docker container. If you opt for this, you don't have to generate the database as it is included in the Dockerfile.
+A Dockerfile is included. The database is created automatically in the container.
 
 ```bash
-
-$ npm run genenv
-
-$ docker build . -t ezups
-
-$ docker run -p <desired host port>:3000 --name ezups ezups:latest
-
+docker build . -t ezups
+docker run -p <desired host port>:5000 --name ezups ezups:latest
 ```
 
 ## Features
 
-1. Security - Authorization and authentication is implemented for API routes.
-
-2. File Upload - Uploads a file to the server and returns a key.
-
-3. File Download - Downloads a file from the server using the key.
-
-4. Autopurge - Automatically deletes files at a 1:00 am everyday.
-
-5. File Metadata - Returns metadata about a file.
-
-6. Delete after download - Option to delete a file after it is downloaded.
+1. **File Upload** - Upload files up to 100MB. Get a key for each upload.
+2. **File Download** - Download files using the key. Optional password protection.
+3. **Delete After Download** - Option to delete a file after it is downloaded once.
+4. **Autopurge** - Files are automatically deleted every day at 1:00 am.
+5. **File Metadata** - Returns metadata about a file (not exposed in UI by default).
+6. **Security** - API routes are protected. No public file listing.
 
 ## Limitations
 
-I should have build this not using Nextjs, not because Nextjs is not good, but because its API routes can only support < 10MB of transfers. So, no files 10MB and above.
+- Maximum file size: **100MB** per upload (enforced client and server side).
+- No user accounts or permanent storage. Files are temporary.
+- No file previews. Download only.
 
-## Other info
+## Tech Stack
+
+- **Backend:** Bun, Elysia, SQLite (bun:sqlite), native `request.formData()` uploads (no multer)
+- **Frontend:** React (Vite), Tailwind CSS
+- **Other:** Docker support, daily purge script
+
+## License
 
 MIT License.
-Created with Nextjs.
+
+---
+
+Created with Bun, React, and love.

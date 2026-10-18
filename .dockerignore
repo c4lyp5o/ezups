@@ -1,2 +1,15 @@
 node_modules
-npm-debug.log
+client/node_modules
+.git
+.gitignore
+db
+uploads
+logs
+.env
+.env.*
+*.log
+Dockerfile
+.dockerignore
+LICENSE
+README.md
+Jenkinsfile
