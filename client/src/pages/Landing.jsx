@@ -33,10 +33,6 @@ const Landing = ({ theme, onToggleTheme }) => {
 						Send it over.
 						<span className="text-accent-600"> Grab it anywhere.</span>
 					</h1>
-					<p className="mt-4 text-stone-500 max-w-xl mx-auto leading-relaxed">
-						Drop a file, protect it with a password, and hand out a key. No
-						accounts, no tracking — the file is gone when you say so.
-					</p>
 				</section>
 
 				<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
