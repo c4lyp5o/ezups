@@ -33,10 +33,14 @@ COPY --from=builder /app/public /app/public
 COPY utils/purge.sh /etc/periodic/daily/purge.sh
 RUN chmod +x /etc/periodic/daily/purge.sh
 
+# Daily purge at 01:00 (container tz = Asia/Kuala_Lumpur). The endpoint is
+# loopback-gated; running inside the container, curl originates on 127.0.0.1.
+RUN printf '%s\n' '0 1 * * * curl -fsS -X DELETE http://127.0.0.1:5000/api/v1/purge >/dev/null 2>&1' > /etc/crontabs/root
+
 EXPOSE 5000
 
 # localAuth only admits loopback; Docker's probe hits 127.0.0.1 so this passes
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://127.0.0.1:5000/api/v1/healthcheck || exit 1
 
-CMD ["bun", "start"]
+CMD ["sh", "-c", "crond && exec bun start"]

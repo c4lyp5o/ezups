@@ -113,12 +113,18 @@ const downloadFile = async ({ query, set }) => {
 	}
 
 	const filename = result.original_name || path.basename(result.file);
+	// RFC 5987 encoding so non-ASCII / special filenames survive the header.
+	const asciiFallback = filename.replace(/[^\\x20-\\x7E]/g, "_").replace(/"/g, "\\\\\"");
+	const encodedFilename = encodeURIComponent(filename).replace(
+		/['()*]/g,
+		(c) => "%" + c.charCodeAt(0).toString(16).toUpperCase(),
+	);
 	set.status = 200;
 	return new Response(new Uint8Array(binaryData), {
 		status: 200,
 		headers: {
 			"Content-Type": "application/octet-stream",
-			"Content-Disposition": `attachment; filename="${filename}"`,
+			"Content-Disposition": `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encodedFilename}`,
 			"Content-Length": String(binaryData.length),
 			"Cache-Control": "no-store",
 		},

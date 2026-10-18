@@ -28,12 +28,17 @@ const toFormData = (fields = {}, file = null) => {
 };
 
 describe("EZUPS API", () => {
-	it("GET /api/v1/healthcheck - public liveness probe (200)", async () => {
-		// healthcheck is intentionally public (returns only {message:"ok"}).
-		// It cannot be loopback-gated because Docker's HEALTHCHECK runs inside
-		// the container where requestIP reports the container IP, not 127.0.0.1.
-		const res = await api("http://localhost/api/v1/healthcheck");
-		expect(res.status).toBe(200);
+	it("GET /api/v1/healthcheck - loopback-gated liveness probe", async () => {
+		// healthcheck is loopback-gated; a synthetic app.handle() request has no
+		// real socket -> 403. The real Docker probe (curl 127.0.0.1) -> 200.
+		const synthetic = await api("http://localhost/api/v1/healthcheck");
+		expect(synthetic.status).toBe(403);
+
+		const port = app.server?.port ?? 5000;
+		const real = await fetch(`http://127.0.0.1:${port}/api/v1/healthcheck`);
+		expect(real.status).toBe(200);
+		const data = await real.json();
+		expect(data).toEqual({ message: "ok" });
 	});
 
 	it("POST /api/v1/upload - returns a share key", async () => {
