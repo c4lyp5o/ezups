@@ -21,4 +21,3 @@ const BranchBadge = () => {
 };
 
 export default BranchBadge;
-EOF

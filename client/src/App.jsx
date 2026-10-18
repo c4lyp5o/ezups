@@ -58,4 +58,3 @@ const App = () => {
 };
 
 export default App;
-EOF
