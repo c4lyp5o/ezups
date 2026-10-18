@@ -1,5 +1,5 @@
 # Stage 1: Build the client (Vite -> ../public, the path Elysia serves)
-FROM oven/bun:1.2.13-alpine AS builder
+FROM oven/bun:1.4.2-alpine AS builder
 ARG APP_BRANCH=development
 ENV APP_BRANCH=$APP_BRANCH
 
@@ -15,7 +15,7 @@ WORKDIR /app/client
 RUN bun install && bun run build
 
 # Stage 2: Production runtime
-FROM oven/bun:1.2.13-alpine
+FROM oven/bun:1.4.2-alpine
 
 RUN apk update --no-cache && \
     apk add --no-cache curl tzdata
