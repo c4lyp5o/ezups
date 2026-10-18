@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [unstable, main]
+  pull_request:
+    branches: [unstable, main]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install backend deps
+        run: bun install
+
+      - name: Install client deps
+        run: cd client && bun install
+
+      - name: Run tests
+        run: bun test
+
+      - name: Build client
+        env:
+          APP_BRANCH: ${{ github.ref_name }}
+          NODE_ENV: production
+        run: cd client && bun run build
+
+      - name: Docker build
+        run: docker build --build-arg APP_BRANCH=${{ github.ref_name }} -t ezups:ci .

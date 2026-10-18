@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import { ToastContainer } from "react-toastify";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
+import BranchBadge from "./components/BranchBadge";
 
 const App = () => {
 	const [theme, setTheme] = useState(() => {
@@ -39,6 +40,7 @@ const App = () => {
 				pauseOnHover
 				theme={theme === "dark" ? "dark" : "light"}
 			/>
+			<BranchBadge />
 			<BrowserRouter>
 				<Routes>
 					<Route

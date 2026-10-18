@@ -1,5 +1,7 @@
 # Stage 1: Build the client (Vite -> ../public, the path Elysia serves)
 FROM oven/bun:1.2.13-alpine AS builder
+ARG APP_BRANCH=development
+ENV APP_BRANCH=$APP_BRANCH
 
 WORKDIR /app
 
