@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
-import { writeFile, readFile, unlink } from "node:fs/promises";
+import { readFile, unlink } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import {
 	UPLOADS_DIR,
@@ -54,7 +55,7 @@ const uploadFile = async ({ request, set }) => {
 		storagePath = path.join(UPLOADS_DIR, `${key}-${original}`);
 	} while (findUploadByKey.get(key));
 
-	await writeFile(storagePath, new Uint8Array(await file.arrayBuffer()));
+	await Bun.write(storagePath, file);
 
 	createUpload.run(
 		key,
@@ -89,20 +90,19 @@ const downloadFile = async ({ query, set }) => {
 		return { message: "Unauthorized" };
 	}
 
-	let binaryData;
-	try {
-		binaryData = await readFile(result.file);
-	} catch {
-		logger.error(`[fs] File not found: ${result.file}`);
-		set.status = 410;
-		return { message: "File no longer exists" };
-	}
-
 	// Delete-after-download: nuke the DB row + file before serving so the file
 	// is gone even if the connection drops mid-transfer.
 	if (result.deleteAfterDownload) {
 		deleteUploadByKey.run(key);
 		logger.info(`[download] key=${key} deleted after download`);
+		let binaryData;
+		try {
+			binaryData = await readFile(result.file);
+		} catch {
+			logger.error(`[fs] File not found: ${result.file}`);
+			set.status = 410;
+			return { message: "File no longer exists" };
+		}
 		try {
 			await unlink(result.file);
 		} catch (error) {
@@ -110,22 +110,46 @@ const downloadFile = async ({ query, set }) => {
 				`[fs] Error deleting file ${result.file}: ${error.message}`,
 			);
 		}
+		const filename = result.original_name || path.basename(result.file);
+		const asciiFallback = filename
+			.replace(/[^\\x20-\\x7E]/g, "_")
+			.replace(/"/g, "\\\\\"");
+		const encodedFilename = encodeURIComponent(filename).replace(
+			/['()*]/g,
+			(c) => "%" + c.charCodeAt(0).toString(16).toUpperCase(),
+		);
+		set.status = 200;
+		return new Response(new Uint8Array(binaryData), {
+			status: 200,
+			headers: {
+				"Content-Type": "application/octet-stream",
+				"Content-Disposition": `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encodedFilename}`,
+				"Content-Length": String(binaryData.length),
+				"Cache-Control": "no-store",
+			},
+		});
 	}
 
+	// Non-DAD: stream the file straight from disk (no full-buffer).
+	if (!existsSync(result.file)) {
+		logger.error(`[fs] File not found: ${result.file}`);
+		set.status = 410;
+		return { message: "File no longer exists" };
+	}
 	const filename = result.original_name || path.basename(result.file);
-	// RFC 5987 encoding so non-ASCII / special filenames survive the header.
-	const asciiFallback = filename.replace(/[^\\x20-\\x7E]/g, "_").replace(/"/g, "\\\\\"");
+	const asciiFallback = filename
+		.replace(/[^\\x20-\\x7E]/g, "_")
+		.replace(/"/g, "\\\\\"");
 	const encodedFilename = encodeURIComponent(filename).replace(
 		/['()*]/g,
 		(c) => "%" + c.charCodeAt(0).toString(16).toUpperCase(),
 	);
 	set.status = 200;
-	return new Response(new Uint8Array(binaryData), {
+	return new Response(Bun.file(result.file), {
 		status: 200,
 		headers: {
 			"Content-Type": "application/octet-stream",
 			"Content-Disposition": `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encodedFilename}`,
-			"Content-Length": String(binaryData.length),
 			"Cache-Control": "no-store",
 		},
 	});
@@ -135,14 +159,16 @@ const downloadFile = async ({ query, set }) => {
 // but never used its elements, so it threw instead of purging.
 const purgeEverything = async ({ set }) => {
 	const files = allUploads.all();
-	for (const record of files) {
-		try {
-			await unlink(record.file);
-			logger.info(`[fs] File ${record.file} deleted from filesystem.`);
-		} catch (error) {
-			logger.error(`[fs] Error deleting file ${record.file}: ${error.message}`);
-		}
-	}
+	await Promise.all(
+		files.map(async (record) => {
+			try {
+				await unlink(record.file);
+				logger.info(`[fs] File ${record.file} deleted from filesystem.`);
+			} catch (error) {
+				logger.error(`[fs] Error deleting file ${record.file}: ${error.message}`);
+			}
+		}),
+	);
 	clearUploads.run();
 	logger.info(`[purge] Removed ${files.length} upload(s) from database.`);
 	return { message: "ok", removed: files.length };

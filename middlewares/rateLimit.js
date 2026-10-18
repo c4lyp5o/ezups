@@ -14,16 +14,14 @@ function clientIp(request, server) {
 export function rateLimit({ request, server, set }) {
 	const now = Date.now();
 	const ip = clientIp(request, server);
+	// Evict expired entries on every request (cheap, keeps map bounded).
+	for (const [k, v] of hits) {
+		if (now >= v.resetAt) hits.delete(k);
+	}
 	const entry = hits.get(ip);
 
 	if (!entry || now >= entry.resetAt) {
 		hits.set(ip, { count: 1, resetAt: now + RATE_LIMIT.windowMs });
-		// Opportunistic sweep so the map can't grow without bound.
-		if (hits.size > 10_000) {
-			for (const [k, v] of hits) {
-				if (now >= v.resetAt) hits.delete(k);
-			}
-		}
 		return;
 	}
 

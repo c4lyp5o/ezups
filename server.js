@@ -52,6 +52,7 @@ export const app = new Elysia()
 		set.headers["X-Frame-Options"] = "DENY";
 		set.headers["Referrer-Policy"] = "no-referrer";
 		set.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+		set.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
 		// Strict CSP. style-src allows 'unsafe-inline' because react-toastify
 		// injects its stylesheet at runtime; everything else stays same-origin.
 		set.headers["Content-Security-Policy"] =
