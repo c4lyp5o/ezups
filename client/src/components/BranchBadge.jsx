@@ -2,6 +2,7 @@
 const BranchBadge = () => {
 	const branch = __APP_BRANCH__;
 	const isMaster = branch === "master";
+	if (isMaster) return null;
 	const detail = `branch: ${branch} · NODE_ENV: ${__APP_NODE_ENV__}`;
 	return (
 		<div

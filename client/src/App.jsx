@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import BranchBadge from "./components/BranchBadge";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const App = () => {
 	const [theme, setTheme] = useState(() => {
@@ -27,8 +28,9 @@ const App = () => {
 		setTheme((prev) => (prev === "dark" ? "light" : "dark"));
 
 	return (
-		<>
-			<ToastContainer
+		<ErrorBoundary>
+			<>
+				<ToastContainer
 				position="top-right"
 				autoClose={3000}
 				hideProgressBar={false}
@@ -54,6 +56,7 @@ const App = () => {
 				</Routes>
 			</BrowserRouter>
 		</>
+		</ErrorBoundary>
 	);
 };
 

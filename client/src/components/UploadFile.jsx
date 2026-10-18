@@ -12,6 +12,7 @@ const UploadFile = () => {
 		size: 0,
 	});
 	const [loading, setLoading] = useState(false);
+	const [progress, setProgress] = useState(0);
 	const [copied, setCopied] = useState(false);
 
 	const handleSubmit = async () => {
@@ -20,6 +21,7 @@ const UploadFile = () => {
 			return toast.error("File too big (max 100MB)");
 
 		setAllInfo((prev) => ({ ...prev, key: "" }));
+		setProgress(0);
 		setLoading(true);
 
 		try {
@@ -28,28 +30,42 @@ const UploadFile = () => {
 			formData.append("password", allInfo.password);
 			formData.append("deleteAfterDownload", allInfo.deleteAfterDownload);
 
-			const response = await fetch("/api/v1/upload", {
-				method: "POST",
-				body: formData,
+			const xhr = new XMLHttpRequest();
+			const result = await new Promise((resolve, reject) => {
+				xhr.open("POST", "/api/v1/upload");
+				xhr.upload.onprogress = (event) => {
+					if (event.lengthComputable) {
+						setProgress(Math.round((event.loaded / event.total) * 100));
+					}
+				};
+				xhr.onload = () => {
+					if (xhr.status >= 200 && xhr.status < 300) {
+						try {
+							resolve(JSON.parse(xhr.responseText));
+						} catch {
+							reject(new Error("Invalid server response"));
+						}
+					} else {
+						let message = `HTTP error! status: ${xhr.status}`;
+						try {
+							const errorData = JSON.parse(xhr.responseText);
+							if (errorData?.message) message = errorData.message;
+						} catch {
+							/* non-JSON error body */
+						}
+						reject(new Error(message));
+					}
+				};
+				xhr.onerror = () =>
+					reject(new Error("Network error during upload"));
+				xhr.send(formData);
 			});
 
-			if (!response.ok) {
-				let message = `HTTP error! status: ${response.status}`;
-				try {
-					const errorData = await response.json();
-					if (errorData?.message) message = errorData.message;
-				} catch {
-					/* non-JSON error body */
-				}
-				throw new Error(message);
-			}
-
-			const data = await response.json();
 			setAllInfo((prev) => ({
 				...prev,
-				key: data.key,
-				filename: data.filename,
-				size: data.size,
+				key: result.key,
+				filename: result.filename,
+				size: result.size,
 			}));
 			setCopied(false);
 			toast.success("File uploaded");
@@ -57,6 +73,7 @@ const UploadFile = () => {
 			toast.error(error.message || "Something went wrong!");
 		} finally {
 			setLoading(false);
+			setProgress(0);
 		}
 	};
 
@@ -78,6 +95,19 @@ const UploadFile = () => {
 				loading={loading}
 				handleSubmit={handleSubmit}
 			/>
+			{loading && (
+				<div className="mt-3" aria-live="polite">
+					<div className="h-2 w-full overflow-hidden rounded-full bg-stone-200">
+						<div
+							className="h-full bg-accent-600 transition-all duration-150"
+							style={{ width: `${progress}%` }}
+						/>
+					</div>
+					<p className="mt-1 text-xs text-stone-500 font-mono">
+						{progress}%
+					</p>
+				</div>
+			)}
 			{allInfo.key && (
 				<div className="mt-4 border-t border-stone-100 pt-4" aria-live="polite">
 					<h3 className="text-xs font-semibold tracking-wide text-stone-400 uppercase mb-2">

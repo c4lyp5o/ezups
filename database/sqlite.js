@@ -38,6 +38,7 @@ try {
 
 db.exec("PRAGMA journal_mode = WAL;");
 db.exec("PRAGMA foreign_keys = ON;");
+db.exec("CREATE INDEX IF NOT EXISTS idx_uploads_created ON uploads(created_at);");
 
 export const createUpload = db.query(
 	"INSERT INTO uploads (key, file, original_name, password, deleteAfterDownload) VALUES (?, ?, ?, ?, ?)",
