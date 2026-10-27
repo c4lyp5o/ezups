@@ -54,7 +54,9 @@ jobs:
       - name: 🌐 Build client
         working-directory: client
         env:
-          APP_BRANCH: ${{ github.ref_name }}
+          # On a pull_request github.ref_name is "<n>/merge"; prefer the source
+          # branch so the build badge shows something meaningful.
+          APP_BRANCH: ${{ github.head_ref || github.ref_name }}
           NODE_ENV: production
         run: bun run build
 
@@ -62,4 +64,4 @@ jobs:
       # in-image client build). Cheap here, and it means a broken Dockerfile
       # fails the PR instead of the release.
       - name: 🐳 Docker build
-        run: docker build --build-arg APP_BRANCH=${{ github.ref_name }} -t ezups:ci .
+        run: docker build --build-arg APP_BRANCH=${{ github.head_ref || github.ref_name }} -t ezups:ci .
