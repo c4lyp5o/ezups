@@ -55,6 +55,14 @@ try {
 }
 
 db.exec("PRAGMA journal_mode = WAL;");
+// FULL: one fsync per commit. At this volume (a handful of uploads a day) the
+// cost is nil, and it shrinks the window where a hard stop leaves a
+// half-applied commit behind -- the exact shape of the corruption that took
+// uploads down on 2026-10-19.
+db.exec("PRAGMA synchronous = FULL;");
+// The sweep and an upload can write at the same moment; without a busy timeout
+// the loser gets an instant SQLITE_BUSY, which surfaced to users as a 500.
+db.exec("PRAGMA busy_timeout = 5000;");
 db.exec("PRAGMA foreign_keys = ON;");
 db.exec("CREATE INDEX IF NOT EXISTS idx_uploads_created ON uploads(created_at);");
 

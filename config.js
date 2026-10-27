@@ -16,7 +16,9 @@ export const PUBLIC_DIR = path.join(HERE, "public");
 export const KEY_LENGTH = 3;
 
 // Server-side caps so the API can't be abused by clients that skip the UI limit.
-export const MAX_UPLOAD_SIZE = 100 * 1024 * 1024; // 100MB
+export const MAX_UPLOAD_SIZE = Number(
+	process.env.MAX_UPLOAD_SIZE ?? 100 * 1024 * 1024,
+); // 100MB
 export const MAX_PASSWORD_LENGTH = 128;
 export const MAX_FILENAME_LENGTH = 200;
 

@@ -67,6 +67,10 @@ describe("EZUPS API", () => {
 			{ method: "GET" },
 		);
 		expect(downloadRes.status).toBe(200);
+		expect(downloadRes.headers.get("content-disposition")).toContain(
+			"filename=\"roundtrip.txt\"",
+		);
+		expect(downloadRes.headers.get("cache-control")).toBe("no-store");
 		expect(await downloadRes.text()).toBe("roundtrip me");
 	});
 
