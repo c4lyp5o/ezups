@@ -1,0 +1,126 @@
+# Build and publish the ezups image to GHCR.
+#
+# Follows the ezllm convention:
+#   * the reusable test workflow is the gate — a red suite never publishes
+#   * `latest` means "what main is", and nothing else may move it
+#   * one platform: linux/amd64. The Dockerfile's builder runs bun + vite inside
+#     the image; cross-building arm64 under QEMU would add minutes to every push
+#     and no host in the fleet is arm64.
+#
+# Trigger: push to main, or a v* tag (git tag v2.0.0 && git push --tags).
+name: Build & Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  # A tag must name the version package.json reports, so an image never claims a
+  # version the app does not know about. A prerelease suffix (v2.0.0-rc1) is
+  # allowed; branch builds pass straight through.
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧾 Checkout source
+        uses: actions/checkout@v5
+      - name: 🏷️ Tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          want=$(node -p "require('./package.json').version")
+          tag="${GITHUB_REF_NAME#v}"; tag="${tag%%-*}"
+          if [ -z "$want" ] || [ "$tag" != "$want" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match package.json version ($want)"
+            exit 1
+          fi
+
+  test:
+    needs: version
+    uses: ./.github/workflows/test.yml
+
+  build_and_push:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: 🧾 Checkout source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0          # git describe needs history
+
+      - name: 🏷️ Version from git
+        id: version
+        # tag build -> "v2.0.0"; branch build -> "main-<short sha>".
+        run: |
+          V=$(git describe --tags --always 2>/dev/null || echo dev)
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "Using version: $V"
+
+      - name: 🏷️ Image tags (latest is MAIN-ONLY)
+        id: tags
+        # `latest` means "what main is". A tag build publishes only its own
+        # version tag: tagging a past commit (a fix release or a retroactive tag)
+        # must never roll `latest` backwards — that happened to ezllm on
+        # 2026-10-27 and the next recreate would have deployed the older image.
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          {
+            echo "list<<EOF"
+            echo "ghcr.io/$OWNER/ezups:${{ steps.version.outputs.version }}"
+            if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+              echo "ghcr.io/$OWNER/ezups:latest"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "tags for ${{ github.ref }}:"; grep -E '^ghcr' "$GITHUB_OUTPUT"
+
+      - name: 🐳 Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: 🐳 Docker Login (GHCR)
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🛠️ Build & Push Docker Image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          build-args: |
+            APP_BRANCH=${{ github.ref_name }}
+          # mode=max exports the builder stage, which is where bun install and
+          # the vite build live — mode=min would cache only the final layers.
+          # ignore-error: a cache export can fail after the image is pushed, and
+          # the worst case we want is a cold cache, never a red build.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max,ignore-error=true
+          tags: ${{ steps.tags.outputs.list }}
+          labels: |
+            org.opencontainers.image.title=ezups
+            org.opencontainers.image.description=Drop a file, get a key, download it anywhere
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+
+      - name: 🔔 Notify ntfy
+        if: always()
+        env:
+          NTFY_URL: ${{ secrets.NTFY_URL }}
+        run: |
+          if [ -n "$NTFY_URL" ]; then
+            curl \
+              -H "Title: Build ${{ job.status }}: ezups:${{ steps.version.outputs.version }}" \
+              -H "Priority: ${{ job.status == 'success' && 'default' || 'high' }}" \
+              -H "Tags: ${{ job.status == 'success' && 'white_check_mark' || 'x' }},rocket" \
+              -d "Branch: ${{ github.ref_name }} | Status: ${{ job.status }}" \
+              "$NTFY_URL"
+          fi
