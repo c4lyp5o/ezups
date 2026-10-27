@@ -41,7 +41,9 @@ describe("EZUPS API", () => {
 		const real = await fetch(`http://127.0.0.1:${port}/api/v1/healthcheck`);
 		expect(real.status).toBe(200);
 		const data = await real.json();
-		expect(data).toEqual({ message: "ok" });
+		expect(data).toMatchObject({ message: "ok" });
+		// The version the deploy is actually running, straight from package.json.
+		expect(data.version).toMatch(/^\d+\.\d+\.\d+$/);
 	});
 
 	it("POST /api/v1/upload - returns a share key", async () => {

@@ -9,6 +9,7 @@ import {
 	MAX_FILENAME_LENGTH,
 	PURGE_MAX_AGE_DAYS,
 	ORPHAN_GRACE_MS,
+	VERSION,
 } from "../config.js";
 import {
 	createUpload,
@@ -54,7 +55,7 @@ const healthCheck = ({ set }) => {
 		set.status = 503;
 		return { message: "unhealthy" };
 	}
-	return { message: "ok" };
+	return { message: "ok", version: VERSION };
 };
 
 // Bun-native upload: read the multipart body straight off the Fetch request
