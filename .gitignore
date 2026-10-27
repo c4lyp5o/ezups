@@ -31,3 +31,5 @@ db/*.sqlite-*
 
 # logs
 logs/*.log
+# release bundle output
+/dist

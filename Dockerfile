@@ -35,9 +35,11 @@ COPY --from=builder /app/public /app/public
 COPY utils/purge.sh /etc/periodic/daily/purge.sh
 RUN chmod +x /etc/periodic/daily/purge.sh
 
-# Daily purge at 01:00 (container tz = Asia/Kuala_Lumpur). The endpoint is
-# loopback-gated; running inside the container, curl originates on 127.0.0.1.
-RUN printf '%s\n' '0 1 * * * curl -fsS -X DELETE http://127.0.0.1:5000/api/v1/purge >/dev/null 2>&1' > /etc/crontabs/root
+# Daily retention sweep at 01:00 (container tz = Asia/Kuala_Lumpur): deletes
+# rows + files older than PURGE_MAX_AGE_DAYS and files with no DB row. The
+# endpoint is loopback-gated; running inside the container, curl originates on
+# 127.0.0.1. ?dryRun=1 for a report-only run.
+RUN printf '%s\n' '0 1 * * * curl -fsS -X POST "http://127.0.0.1:5000/api/v1/sweep" >/dev/null 2>&1' > /etc/crontabs/root
 
 EXPOSE 5000
 

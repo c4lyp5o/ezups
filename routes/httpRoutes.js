@@ -6,6 +6,7 @@ import {
 	uploadFile,
 	downloadFile,
 	purgeEverything,
+	sweepExpired,
 } from "../controllers/httpControllers.js";
 
 export const HttpRoutes = new Elysia({ prefix: "/api/v1" })
@@ -15,5 +16,7 @@ export const HttpRoutes = new Elysia({ prefix: "/api/v1" })
 	.get("/healthcheck", healthCheck, { beforeHandle: [localAuth] })
 	.post("/upload", uploadFile, { beforeHandle: [rateLimit] })
 	.get("/download", downloadFile, { beforeHandle: [rateLimit] })
-	// Destructive — loopback only.
+	// Destructive — loopback only. /sweep is the daily retention job (age + orphan
+	// cleanup, supports ?dryRun=1); /purge still wipes everything on demand.
+	.post("/sweep", sweepExpired, { beforeHandle: [localAuth] })
 	.delete("/purge", purgeEverything, { beforeHandle: [localAuth] });
