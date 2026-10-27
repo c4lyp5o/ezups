@@ -1,0 +1,99 @@
+# Package a runnable bundle and attach it to a GitHub Release.
+#
+# This is the "give them something to download" path, alongside the GHCR image.
+# A Bun app is platform independent, so there is one bundle rather than a matrix:
+#
+#   ezups_<version>.tar.gz / .zip
+#     ezups_<version>/
+#       server.js, config.js, controllers/, database/, middlewares/, routes/,
+#       utils/            server source
+#       public/           built client (the image the container serves)
+#       package.json, bun.lock
+#       README.md, .env.example
+#       start.sh          bun install --production && bun start
+#   SHA256SUMS
+#
+# Running it needs bun (https://bun.sh) only — no build step, no Docker.
+#
+# Trigger:  git tag v2.0.0 && git push --tags
+# Gate:     the reusable test workflow; a red suite never produces an asset.
+name: Release bundle
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write        # create the release and upload assets
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧾 Checkout source
+        uses: actions/checkout@v5
+      - name: 🏷️ Tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          want=$(node -p "require('./package.json').version")
+          tag="${GITHUB_REF_NAME#v}"; tag="${tag%%-*}"
+          if [ -z "$want" ] || [ "$tag" != "$want" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match package.json version ($want)"
+            exit 1
+          fi
+
+  test:
+    needs: version
+    uses: ./.github/workflows/test.yml
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧾 Checkout source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: 🟢 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: 🔨 Build the bundle
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          name="ezups_${VERSION}"
+          mkdir -p "dist/${name}"
+          # Server source + the built client. No node_modules: the recipient runs
+          # `bun install --production` (start.sh does it for them).
+          cp -r server.js config.js package.json bun.lock \
+                controllers database middlewares routes utils \
+                README.md .env.example "dist/${name}/"
+          (cd client && bun install --frozen-lockfile && bun run build)
+          cp -r public "dist/${name}/public"
+          cat > "dist/${name}/start.sh" <<'SH'
+          #!/bin/sh
+          set -e
+          cd "$(dirname "$0")"
+          bun install --production
+          exec bun start
+          SH
+          chmod +x "dist/${name}/start.sh"
+          # python3 -m zipfile / tar: no extra package to install, and the layout
+          # is verifiable on any box.
+          tar -C dist -czf "dist/${name}.tar.gz" "${name}"
+          (cd dist && python3 -m zipfile -c "${name}.zip" "${name}")
+          rm -rf "dist/${name}"
+          (cd dist && sha256sum *.tar.gz *.zip > SHA256SUMS)
+          echo "--- artifacts ---"; ls -la dist
+
+      - name: 📦 Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true
+          files: dist/*

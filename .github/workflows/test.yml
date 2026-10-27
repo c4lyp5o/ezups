@@ -1,0 +1,67 @@
+# Test gate — run BEFORE anything publishes.
+#
+# docker-publish.yml and release.yml both call this workflow (`workflow_call`),
+# and their build jobs say `needs: test`, so a red suite never produces an image
+# or a release asset.
+#
+# It also runs on `pull_request` (branches development + main): without that a
+# branch could be opened, reviewed and merged with NO test result anywhere, and
+# "no checks reported" reads like a green light to anyone skimming the PR.
+# There is no `push` trigger, so a merge commit is still tested exactly once —
+# by the publish caller, or by the next PR.
+name: Tests
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - development
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: 🧾 Checkout source
+        uses: actions/checkout@v5
+
+      - name: 🟢 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: 📦 Install backend deps
+        run: bun install --frozen-lockfile
+
+      - name: 📦 Install client deps
+        working-directory: client
+        run: bun install --frozen-lockfile
+
+      # --isolate: each test file gets a fresh module registry. tests/upload-orphan
+      # mocks database/sqlite.js, and without isolation that mock leaks into every
+      # later file in the same process and their uploads start failing.
+      - name: 🧪 Tests
+        run: bun test --isolate
+
+      - name: 🧹 Lint client
+        working-directory: client
+        run: bun run lint
+
+      - name: 🌐 Build client
+        working-directory: client
+        env:
+          # On a pull_request github.ref_name is "<n>/merge"; prefer the source
+          # branch so the build badge shows something meaningful.
+          APP_BRANCH: ${{ github.head_ref || github.ref_name }}
+          NODE_ENV: production
+        run: bun run build
+
+      # Proves the production image still builds (production-only deps + the
+      # in-image client build). Cheap here, and it means a broken Dockerfile
+      # fails the PR instead of the release.
+      - name: 🐳 Docker build
+        run: docker build --build-arg APP_BRANCH=${{ github.head_ref || github.ref_name }} -t ezups:ci .
