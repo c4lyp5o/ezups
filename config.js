@@ -21,3 +21,12 @@ export const MAX_PASSWORD_LENGTH = 128;
 export const MAX_FILENAME_LENGTH = 200;
 
 export const RATE_LIMIT = { limit: 50, windowMs: 60_000 };
+
+// Retention: the daily sweep deletes rows + files older than this. Set it to 0
+// to keep everything (no age-based deletion).
+export const PURGE_MAX_AGE_DAYS = Number(process.env.PURGE_MAX_AGE_DAYS ?? 7);
+
+// Files with no DB row are deleted by the sweep, but never one written in the
+// last few minutes -- that would race an upload between Bun.write and the
+// INSERT.
+export const ORPHAN_GRACE_MS = 10 * 60_000;

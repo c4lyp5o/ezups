@@ -23,7 +23,7 @@ jobs:
         run: cd client && bun install
 
       - name: Run tests
-        run: bun test
+        run: bun test --isolate
 
       - name: Build client
         env:

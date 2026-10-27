@@ -6,6 +6,9 @@ import path from "node:path";
 // Point the DB + uploads at a throwaway temp dir BEFORE importing the app so
 // the real db/ and uploads/ are never touched by the test run.
 const tmp = mkdtempSync(path.join(tmpdir(), "ezups-test-"));
+// Port 0 = let the OS pick a free port; test files run back to back
+// and must never fight over 5000 (or over a service already using it).
+process.env.PORT = "0";
 process.env.DB_PATH = path.join(tmp, "test.sqlite");
 process.env.UPLOADS_DIR = path.join(tmp, "uploads");
 

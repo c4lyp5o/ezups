@@ -12,7 +12,7 @@
 		"dev": "conc \"bun dev-client\" \"bun dev-server\"",
 		"build-client": "cd client && bun run build",
 		"start": "NODE_ENV=production bun server.js",
-		"test": "bun test"
+		"test": "bun test --isolate"
 	},
 	"author": "c4lyp5o",
 	"license": "MIT",
