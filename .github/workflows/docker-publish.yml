@@ -98,6 +98,7 @@ jobs:
           platforms: linux/amd64
           build-args: |
             APP_BRANCH=${{ github.ref_name }}
+            APP_VERSION=${{ steps.version.outputs.version }}
           # mode=max exports the builder stage, which is where bun install and
           # the vite build live — mode=min would cache only the final layers.
           # ignore-error: a cache export can fail after the image is pushed, and

@@ -17,6 +17,13 @@ RUN bun install && bun run build
 # Stage 2: Production runtime
 FROM oven/bun:1.4.2-alpine
 
+# Version reported by the image itself. Without this the label is inherited from
+# oven/bun and `docker inspect` claims the base image's version (1.4.2-alpine)
+# instead of the app's. CI passes the release version / git describe here.
+ARG APP_VERSION=dev
+LABEL org.opencontainers.image.title="ezups" \
+      org.opencontainers.image.version="$APP_VERSION"
+
 RUN apk update --no-cache && \
     apk add --no-cache curl tzdata
 
