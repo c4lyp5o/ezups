@@ -4,7 +4,7 @@
 # and their build jobs say `needs: test`, so a red suite never produces an image
 # or a release asset.
 #
-# It also runs on `pull_request` (branches development + main): without that a
+# It also runs on `pull_request` (branches development + master): without that a
 # branch could be opened, reviewed and merged with NO test result anywhere, and
 # "no checks reported" reads like a green light to anyone skimming the PR.
 # There is no `push` trigger, so a merge commit is still tested exactly once —
@@ -17,7 +17,7 @@ on:
   pull_request:
     branches:
       - development
-      - main
+      - master
 
 jobs:
   test:

@@ -7,13 +7,13 @@
 #     the image; cross-building arm64 under QEMU would add minutes to every push
 #     and no host in the fleet is arm64.
 #
-# Trigger: push to main, or a v* tag (git tag v2.0.0 && git push --tags).
+# Trigger: push to master, or a v* tag (git tag v2.0.0 && git push --tags).
 name: Build & Push Docker Image
 
 on:
   push:
     branches:
-      - main
+      - master
     tags:
       - "v*"
   workflow_dispatch:
@@ -56,7 +56,7 @@ jobs:
 
       - name: 🏷️ Version from git
         id: version
-        # tag build -> "v2.0.0"; branch build -> "main-<short sha>".
+        # tag build -> "v2.0.0"; branch build -> "master-<short sha>".
         run: |
           V=$(git describe --tags --always 2>/dev/null || echo dev)
           echo "version=$V" >> "$GITHUB_OUTPUT"
@@ -73,7 +73,7 @@ jobs:
           {
             echo "list<<EOF"
             echo "ghcr.io/$OWNER/ezups:${{ steps.version.outputs.version }}"
-            if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            if [ "${{ github.ref }}" = "refs/heads/master" ]; then
               echo "ghcr.io/$OWNER/ezups:latest"
             fi
             echo "EOF"
