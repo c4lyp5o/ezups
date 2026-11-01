@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "../ez/toast";
 import DownloadInput from "./DownloadInput";
 
 const DownloadFile = () => {

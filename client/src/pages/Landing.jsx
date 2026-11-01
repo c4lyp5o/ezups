@@ -1,75 +1,50 @@
-import UploadFile from "../components/UploadFile";
 import DownloadFile from "../components/DownloadFile";
+import UploadFile from "../components/UploadFile";
+import Backdrop from "../ez/Backdrop";
+import { Brand, Shell } from "../ez/Shell";
+import { Stagger, StaggerItem } from "../ez/motion";
+import { cx, panel, SectionLabel } from "../ez/ui";
 
-const Landing = ({ theme, onToggleTheme }) => {
+function Card({ title, hint, children }) {
 	return (
-		<div className="min-h-screen flex flex-col">
-			<header className="sticky top-0 z-10 bg-paper/85 backdrop-blur border-b border-stone-200/80">
-				<div className="max-w-5xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
-					<a
-						href="/"
-						className="font-mono text-sm tracking-tight text-ink"
-						aria-label="EZUPS home"
-					>
-						ezups<span className="text-accent-600">.</span>
-					</a>
-					<span className="text-xs text-stone-400 font-mono hidden sm:inline">
-						upload anything
-					</span>
-					<button
-						type="button"
-						onClick={onToggleTheme}
-						aria-label="Toggle theme"
-						className="px-3 py-1.5 text-xs font-medium text-stone-600 bg-white border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors"
-					>
-						{theme === "dark" ? "☀ Light" : "🌙 Dark"}
-					</button>
-				</div>
+		<StaggerItem className={cx(panel, "flex flex-col")}>
+			<header className="flex items-baseline gap-3 border-b border-line px-5 py-3">
+				<SectionLabel>{title}</SectionLabel>
+				<span className="text-[12px] text-mute">{hint}</span>
 			</header>
+			<div className="p-5">{children}</div>
+		</StaggerItem>
+	);
+}
 
-			<main className="flex-1 w-full max-w-5xl mx-auto px-5 sm:px-8 py-10 sm:py-16">
-				<section className="text-center mb-10 sm:mb-14">
-					<h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-ink">
-						Send it over.
-						<span className="text-accent-600"> Grab it anywhere.</span>
-					</h1>
-				</section>
+const Landing = () => (
+	<Shell brand={<Brand name="ezups" glyph="up" scope="Self-hosted file sharing" />} width="max-w-[1080px]">
+		<div className="flex min-h-[calc(100dvh-7.5rem)] flex-col">
+			<section className="relative isolate mb-8 min-h-[150px] pt-6 pb-8">
+				<Backdrop className="-z-10 left-auto hidden w-[45%] md:block" opacity={0.5} nodes={14} />
+				<h1 className="text-[24px] font-semibold tracking-[-0.01em] text-ink">Send it over. Grab it anywhere.</h1>
+				<p className="mt-1 max-w-md text-[14px] text-mute">
+					Upload a file, share its key. Optional password, optional self-destruct after one download.
+				</p>
+			</section>
 
-				<section className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-					<div className="bg-white border border-stone-200 rounded-xl shadow-sm">
-						<div className="px-6 pt-5 pb-4 border-b border-stone-100">
-							<h2 className="text-sm font-semibold text-ink flex items-center gap-2">
-								<span className="inline-block w-1.5 h-1.5 rounded-full bg-accent-600" />
-								Upload a file
-							</h2>
-						</div>
-						<div className="p-6">
-							<UploadFile />
-						</div>
-					</div>
+			<Stagger className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+				<Card title="Upload a file" hint="Up to 100 MB">
+					<UploadFile />
+				</Card>
+				<Card title="Retrieve a file" hint="With the key you were given">
+					<DownloadFile />
+				</Card>
+			</Stagger>
 
-					<div className="bg-white border border-stone-200 rounded-xl shadow-sm">
-						<div className="px-6 pt-5 pb-4 border-b border-stone-100">
-							<h2 className="text-sm font-semibold text-ink flex items-center gap-2">
-								<span className="inline-block w-1.5 h-1.5 rounded-full bg-stone-300" />
-								Retrieve a file
-							</h2>
-						</div>
-						<div className="p-6">
-							<DownloadFile />
-						</div>
-					</div>
-				</section>
-			</main>
-
-			<footer className="border-t border-stone-200/80">
-				<div className="max-w-5xl mx-auto px-5 sm:px-8 py-6 flex items-center justify-between text-xs text-stone-400">
-					<span className="font-mono">ezups v2.0.0</span>
-					<span>self-hosted · no tracking</span>
-				</div>
+			<footer className="mt-auto flex items-center justify-between border-t border-line pt-5 text-[12px] text-mute">
+				<span>
+					ezups <span className="font-mono">v2.0.0</span>
+				</span>
+				<span>Self-hosted · no tracking</span>
 			</footer>
 		</div>
-	);
-};
+	</Shell>
+);
 
 export default Landing;

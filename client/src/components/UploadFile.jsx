@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "../ez/toast";
+import { Bar, Collapse } from "../ez/motion";
+import { btn, Chip, cx, inputCls, SectionLabel } from "../ez/ui";
 import UploadInput from "./UploadInput";
 
 const UploadFile = () => {
@@ -89,50 +91,41 @@ const UploadFile = () => {
 
 	return (
 		<>
-			<UploadInput
-				allInfo={allInfo}
-				setAllInfo={setAllInfo}
-				loading={loading}
-				handleSubmit={handleSubmit}
-			/>
-			{loading && (
-				<div className="mt-3" aria-live="polite">
-					<div className="h-2 w-full overflow-hidden rounded-full bg-stone-200">
-						<div
-							className="h-full bg-accent-600 transition-all duration-150"
-							style={{ width: `${progress}%` }}
-						/>
+			<UploadInput allInfo={allInfo} setAllInfo={setAllInfo} loading={loading} handleSubmit={handleSubmit} />
+			<Collapse open={loading}>
+				<div className="pt-4" aria-live="polite">
+					<div className="mb-1.5 flex justify-between text-[12px]">
+						<span className="text-mute">Uploading</span>
+						<span className="font-mono text-ink">{progress}%</span>
 					</div>
-					<p className="mt-1 text-xs text-stone-500 font-mono">
-						{progress}%
-					</p>
+					<Bar value={progress / 100} />
 				</div>
-			)}
-			{allInfo.key && (
-				<div className="mt-4 border-t border-stone-100 pt-4" aria-live="polite">
-					<h3 className="text-xs font-semibold tracking-wide text-stone-400 uppercase mb-2">
-						Share your key
-					</h3>
+			</Collapse>
+			<Collapse open={!!allInfo.key}>
+				<div className="mt-5 border-t border-line pt-4" aria-live="polite">
+					<div className="mb-2 flex items-center gap-2">
+						<SectionLabel>Share your key</SectionLabel>
+						<Chip tone="ok" className="ml-auto">
+							Uploaded
+						</Chip>
+					</div>
 					<div className="flex items-center gap-2">
 						<input
 							readOnly
 							value={allInfo.key}
 							aria-label="Upload key"
-							className="flex-1 min-w-0 px-3 py-2 text-sm font-mono text-stone-800 bg-stone-50 border border-stone-300 rounded-lg focus:outline-none"
+							onFocus={(e) => e.target.select()}
+							className={cx(inputCls, "min-w-0 flex-1 font-code text-accent")}
 						/>
-						<button
-							type="button"
-							onClick={handleCopyKey}
-							className="px-3 py-2 text-sm font-medium text-accent-700 bg-white border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors"
-						>
+						<button type="button" onClick={handleCopyKey} className={cx(btn.base, btn.ghost)}>
 							{copied ? "Copied" : "Copy"}
 						</button>
 					</div>
-					<p className="mt-2 text-xs text-stone-500">
-						{allInfo.filename} · {(allInfo.size / 1024).toFixed(1)} KB
+					<p className="mt-2 text-[12px] text-mute">
+						{allInfo.filename} · <span className="font-mono">{(allInfo.size / 1024).toFixed(1)} KB</span>
 					</p>
 				</div>
-			)}
+			</Collapse>
 		</>
 	);
 };
