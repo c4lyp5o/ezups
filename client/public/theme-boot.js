@@ -9,7 +9,7 @@
 		r.classList.toggle("light", t === "light");
 		var m = document.querySelector('meta[name="theme-color"]');
 		if (m) m.setAttribute("content", t === "dark" ? "#171719" : "#f9fafb");
-	} catch (e) {
+	} catch {
 		/* class="dark" is already on <html> */
 	}
 })();

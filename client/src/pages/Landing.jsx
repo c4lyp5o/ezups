@@ -19,7 +19,7 @@ function Card({ title, hint, children }) {
 
 const Landing = () => (
 	<Shell brand={<Brand name="ezups" glyph="up" scope="Self-hosted file sharing" />} width="max-w-[1080px]">
-		<div className="flex min-h-[calc(100dvh-7.5rem)] flex-col">
+		<div className="flex flex-col">
 			<section className="relative isolate mb-8 min-h-[150px] pt-6 pb-8">
 				<Backdrop className="-z-10 left-auto hidden w-[45%] md:block" opacity={0.5} nodes={14} />
 				<h1 className="text-[24px] font-semibold tracking-[-0.01em] text-ink">Send it over. Grab it anywhere.</h1>
@@ -37,12 +37,6 @@ const Landing = () => (
 				</Card>
 			</Stagger>
 
-			<footer className="mt-auto flex items-center justify-between border-t border-line pt-5 text-[12px] text-mute">
-				<span>
-					ezups <span className="font-mono">v2.0.0</span>
-				</span>
-				<span>Self-hosted · no tracking</span>
-			</footer>
 		</div>
 	</Shell>
 );

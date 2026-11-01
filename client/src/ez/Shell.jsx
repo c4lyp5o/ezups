@@ -44,6 +44,40 @@ export function Brand({ name, glyph, scope }) {
 	);
 }
 
+/* Build-time constants from vite.config.js `define`; guarded so tests and
+   tools that skip the define still render. */
+const APP_VERSION = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "";
+const APP_REPO = typeof __APP_REPO__ !== "undefined" ? __APP_REPO__ : "";
+
+/** Page footer, ezhost style: the running version, a dot, the repo link. */
+export function Footer({ version = APP_VERSION, repo = APP_REPO, className }) {
+	return (
+		<footer
+			className={cx(
+				"flex items-center justify-center gap-2 border-t border-line py-5 text-[13px] text-mute",
+				className,
+			)}
+		>
+			{version && <span className="font-mono">v{version}</span>}
+			{version && repo && <span aria-hidden>·</span>}
+			{repo && (
+				<a
+					href={repo}
+					target="_blank"
+					rel="noopener noreferrer"
+					title="Source on GitHub"
+					className="rounded p-1 transition-colors hover:text-ink"
+				>
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+						<path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z" />
+					</svg>
+					<span className="sr-only">Source on GitHub</span>
+				</a>
+			)}
+		</footer>
+	);
+}
+
 function NavList({ nav, active, onNavigate, renderLink }) {
 	return (
 		<nav className="flex flex-col gap-0.5 px-3" aria-label="Main">
@@ -182,7 +216,7 @@ export function Shell({
 
 	if (!nav) {
 		return (
-			<div className="min-h-dvh">
+			<div className="flex min-h-dvh flex-col">
 				<header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b border-line bg-bg px-4 sm:px-8">
 					{brand}
 					<div className="flex items-center gap-2">
@@ -190,10 +224,11 @@ export function Shell({
 						<ThemeToggle compact />
 					</div>
 				</header>
-				<main className={cx("mx-auto w-full px-4 pt-7 pb-16 sm:px-8", width)}>
+				<main className={cx("mx-auto w-full flex-1 px-4 pt-7 pb-16 sm:px-8", width)}>
 					{header}
 					{screen}
 				</main>
+				<Footer />
 			</div>
 		);
 	}
@@ -265,13 +300,16 @@ export function Shell({
 				)}
 			</AnimatePresence>
 
-			<main className="min-w-0 flex-1 px-4 pt-16 pb-16 lg:ml-56 lg:px-8 lg:pt-7">
-				{topbarActions && (
-					<div className="mb-4 hidden justify-end gap-2 lg:flex">{topbarActions}</div>
-				)}
-				{header}
-				{screen}
-			</main>
+			<div className="flex min-w-0 flex-1 flex-col lg:ml-56">
+				<main className="min-w-0 flex-1 px-4 pt-16 pb-16 lg:px-8 lg:pt-7">
+					{topbarActions && (
+						<div className="mb-4 hidden justify-end gap-2 lg:flex">{topbarActions}</div>
+					)}
+					{header}
+					{screen}
+				</main>
+				<Footer />
+			</div>
 		</div>
 	);
 }
