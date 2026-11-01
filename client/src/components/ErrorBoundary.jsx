@@ -17,20 +17,20 @@ class ErrorBoundary extends React.Component {
 	render() {
 		if (this.state.hasError) {
 			return (
-				<div className="min-h-screen flex flex-col items-center justify-center bg-paper text-center px-4">
-					<p className="font-mono text-[7rem] sm:text-[10rem] leading-none font-semibold text-stone-200 select-none">
+				<div className="flex min-h-dvh flex-col items-center justify-center bg-bg px-4 text-center">
+					<p className="select-none font-mono text-[96px] leading-none font-semibold text-line-strong sm:text-[140px]">
 						!
 					</p>
-					<h1 className="text-lg font-semibold text-ink -mt-6 sm:-mt-10">
+					<h1 className="mt-4 text-[24px] font-semibold tracking-[-0.01em] text-ink">
 						Something went wrong
 					</h1>
-					<p className="mt-2 text-sm text-stone-500 max-w-sm">
+					<p className="mt-2 max-w-sm text-[13px] text-mute">
 						Reload the page to try again.
 					</p>
 					<button
 						type="button"
 						onClick={() => window.location.reload()}
-						className="mt-8 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-accent-700 border border-stone-200 bg-white rounded-lg hover:bg-stone-50 transition-colors"
+						className="mt-8 inline-flex h-[34px] items-center justify-center gap-2 rounded-full border border-ink bg-ink px-4 text-[13px] font-medium text-bg hover:border-dim hover:bg-dim"
 					>
 						Reload
 					</button>
