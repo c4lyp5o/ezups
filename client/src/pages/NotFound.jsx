@@ -1,32 +1,23 @@
-const NotFound = ({ theme, onToggleTheme }) => {
-	return (
-		<div className="min-h-screen flex flex-col items-center justify-center bg-paper text-center px-4">
-			<p className="font-mono text-[7rem] sm:text-[10rem] leading-none font-semibold text-stone-200 select-none">
-				404
+import Backdrop from "../ez/Backdrop";
+import { Screen } from "../ez/motion";
+import { ThemeToggle } from "../ez/theme";
+import { btn, cx } from "../ez/ui";
+
+const NotFound = () => (
+	<div className="relative isolate flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-bg px-4 text-center">
+		<Backdrop className="-z-10" opacity={0.18} nodes={8} shift={2.4} />
+		<Screen className="flex flex-col items-center">
+			<p className="select-none font-mono text-[96px] leading-none font-semibold text-line-strong sm:text-[140px]">404</p>
+			<h1 className="mt-4 text-[24px] font-semibold tracking-[-0.01em] text-ink">This page doesn't exist</h1>
+			<p className="mt-2 max-w-sm text-[13px] text-mute">
+				The file you're looking for was never uploaded, or it has already been deleted.
 			</p>
-			<h1 className="text-lg font-semibold text-ink -mt-6 sm:-mt-10">
-				This page doesn't exist
-			</h1>
-			<p className="mt-2 text-sm text-stone-500 max-w-sm">
-				The file you're looking for was never uploaded — or it's already
-				been deleted.
-			</p>
-			<a
-				href="/"
-				className="mt-8 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-accent-700 border border-stone-200 bg-white rounded-lg hover:bg-stone-50 hover:border-stone-300 transition-colors duration-150"
-			>
-				← Back home
+			<a href="/" className={cx(btn.base, btn.primary, "mt-8")}>
+				Back home
 			</a>
-			<button
-				type="button"
-				onClick={onToggleTheme}
-				aria-label="Toggle theme"
-				className="mt-6 px-3 py-1.5 text-xs font-medium text-stone-600 bg-white border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors"
-			>
-				{theme === "dark" ? "☀ Light" : "🌙 Dark"}
-			</button>
-		</div>
-	);
-};
+			<ThemeToggle compact className="mt-6" />
+		</Screen>
+	</div>
+);
 
 export default NotFound;

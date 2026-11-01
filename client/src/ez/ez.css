@@ -1,0 +1,251 @@
+/* ez house style — shared by every ez* app. Ported 1:1 from ezllm/web
+   (src/index.css + DESIGN.md) and ezdyndns (frontend/public/app.css):
+   a dark data terminal, colour on data and status only, one accent per app.
+
+   Import it from the app's own index.css right after `@import "tailwindcss";`
+   and set the app accent in that file (see "app accent" below).
+
+   Light tokens live in @theme, dark tokens in `.dark` with the SAME names —
+   values declared in @theme are emitted at :root, so a dark palette placed
+   there would never switch. Never a raw hex in a component. */
+
+@import "@fontsource-variable/public-sans";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--color-bg: #f9fafb;
+	--color-surface: #ffffff;
+	--color-raised: #f4f4f5;
+	--color-hover: #eeeeef;
+	--color-overlay: rgba(17, 17, 17, 0.42);
+
+	--color-line: #e8e8e8;
+	--color-line-strong: #d1d5db;
+
+	--color-ink: #111111;
+	--color-dim: #3f4146;
+	--color-mute: #5f6368;
+
+	/* app accent (light). Each app overrides --ez-accent-light / --ez-accent-dark. */
+	--color-accent: var(--ez-accent-light, #0369a1);
+	--color-accent-dim: color-mix(in srgb, var(--ez-accent-light, #0369a1) 10%, transparent);
+	--color-accent-ink: #ffffff;
+
+	--color-ok: #247b50;
+	--color-warn: #92400e;
+	--color-bad: #c4242a;
+	--color-ok-dim: #dcfae5;
+	--color-warn-dim: #fffbeb;
+	--color-bad-dim: #ffedea;
+
+	--color-wash: rgba(17, 17, 17, 0.035);
+	--color-wash-strong: rgba(17, 17, 17, 0.07);
+	--color-inset: #f4f4f5;
+	--color-shade: #ececee;
+
+	--font-sans:
+		"Public Sans Variable", "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+	/* font-mono is the FIGURE face (tabular Public Sans); real code keeps a monospace. */
+	--font-mono: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+	--font-code:
+		ui-monospace, "SF Mono", SFMono-Regular, Menlo, "JetBrains Mono", Consolas, monospace;
+
+	--radius-lg: 6px;
+	--radius-xl: 6px;
+	--radius-2xl: 6px;
+
+	--dur-fast: 140ms;
+	--dur-base: 220ms;
+	--dur-slow: 360ms;
+	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+	--ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+	--animate-pulse-soft: pulse-soft 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	--animate-fade-up: fade-up var(--dur-base) var(--ease-out) both;
+	--animate-fade-in: fade-in var(--dur-fast) var(--ease-out) both;
+}
+
+/* Tokens read from JS (three.js scene, canvas) — plain :root so Tailwind never prunes them. */
+:root {
+	--ez-viz-accent: var(--ez-accent-light, #0369a1);
+	--ez-viz-line: #c9ccd1;
+	--ez-viz-node: #3f4146;
+	--ez-viz-ok: #247b50;
+	--ez-viz-warn: #92400e;
+	--ez-viz-bad: #c4242a;
+}
+
+.dark {
+	--color-bg: #171719;
+	--color-surface: #131217;
+	--color-raised: #212023;
+	--color-hover: #26252a;
+	--color-overlay: rgba(0, 0, 0, 0.62);
+
+	--color-line: #232326;
+	--color-line-strong: #3a3a3e;
+
+	--color-ink: #f2f2f3;
+	--color-dim: #bdbdc0;
+	--color-mute: #8a8c92;
+
+	--color-accent: var(--ez-accent-dark, #38bdf8);
+	--color-accent-dim: color-mix(in srgb, var(--ez-accent-dark, #38bdf8) 12%, transparent);
+	--color-accent-ink: #08131a;
+
+	--color-ok: #44a282;
+	--color-warn: #d9a441;
+	--color-bad: #e5566f;
+	--color-ok-dim: #1b2828;
+	--color-warn-dim: #2a2416;
+	--color-bad-dim: #2c1a20;
+
+	--color-wash: rgba(255, 255, 255, 0.035);
+	--color-wash-strong: rgba(255, 255, 255, 0.07);
+	--color-inset: #1c1b1f;
+	--color-shade: #26252a;
+
+	--ez-viz-accent: var(--ez-accent-dark, #38bdf8);
+	--ez-viz-line: #3a3a3e;
+	--ez-viz-node: #bdbdc0;
+	--ez-viz-ok: #44a282;
+	--ez-viz-warn: #d9a441;
+	--ez-viz-bad: #e5566f;
+}
+
+@keyframes pulse-soft {
+	0%,
+	100% {
+		opacity: 0.45;
+	}
+	50% {
+		opacity: 0.85;
+	}
+}
+@keyframes fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+html {
+	transition:
+		background-color 180ms ease,
+		color 180ms ease;
+	color-scheme: dark;
+}
+html.light {
+	color-scheme: light;
+}
+
+body {
+	background: var(--color-bg);
+	color: var(--color-ink);
+	font-family: var(--font-sans);
+	font-size: 13px;
+	line-height: 1.55;
+	font-variant-numeric: tabular-nums;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+*:focus-visible {
+	outline: 2px solid var(--color-accent);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+::selection {
+	background: var(--color-accent-dim);
+}
+
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: var(--color-wash-strong);
+	border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--color-line-strong);
+}
+
+@layer base {
+	input,
+	select,
+	textarea,
+	button {
+		font: inherit;
+		color: inherit;
+	}
+	input[type="range"] {
+		accent-color: var(--color-accent);
+	}
+	input[type="checkbox"],
+	input[type="radio"] {
+		accent-color: var(--color-ok);
+	}
+}
+input::placeholder,
+textarea::placeholder {
+	color: var(--color-mute);
+}
+
+.tnum,
+.font-mono {
+	font-variant-numeric: tabular-nums;
+}
+
+/* Press feedback on EVERY button: a scale (composes with translate utilities). */
+button {
+	transition-property: color, background-color, border-color, opacity, scale;
+	transition-duration: 150ms;
+	transition-timing-function: var(--ease-out);
+}
+button:not(:disabled):active {
+	scale: 0.97;
+}
+button:disabled {
+	cursor: not-allowed;
+}
+
+code,
+pre,
+kbd,
+samp,
+.font-code {
+	font-family: var(--font-code);
+	font-variant-numeric: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		/* biome-ignore lint/complexity/noImportantStyles: reduced motion must win */
+		animation-duration: 0.01ms !important;
+		/* biome-ignore lint/complexity/noImportantStyles: reduced motion must win */
+		animation-iteration-count: 1 !important;
+		/* biome-ignore lint/complexity/noImportantStyles: reduced motion must win */
+		transition-duration: 0.01ms !important;
+		/* biome-ignore lint/complexity/noImportantStyles: reduced motion must win */
+		scroll-behavior: auto !important;
+	}
+}
