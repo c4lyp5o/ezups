@@ -15,7 +15,7 @@ import {
 	useMotionValueEvent,
 	useSpring,
 } from "motion/react";
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useRef, useSyncExternalStore } from "react";
 import { cx } from "./lib";
 
 export const DUR = { fast: 0.14, base: 0.22, slow: 0.36 };
@@ -170,7 +170,9 @@ export function CountUp({
 	const spring$ = useSpring(tween ? 0 : value, { stiffness: 120, damping: 22, mass: 0.6 });
 	const text = useMotionValue(format(value));
 	const fmt = useRef(format);
-	fmt.current = format;
+	useLayoutEffect(() => {
+		fmt.current = format;
+	});
 
 	useEffect(() => {
 		if (!tween) {

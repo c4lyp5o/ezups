@@ -311,11 +311,10 @@ export function Tabs({ tabs, value, onChange, label, className }) {
 // ── modal: Enter submits, Escape/backdrop close unless busy ──────────────
 export function Modal({ open, onClose, title, subtitle, children, footer, wide, busy, onSubmit }) {
 	const ref = useRef(null);
-	const live = useRef({ busy, onClose });
-	live.current = { busy, onClose };
 	const requestClose = useCallback(() => {
-		if (!live.current.busy) live.current.onClose();
-	}, []);
+		if (!busy) onClose();
+	}, [busy, onClose]);
+	// Focus + scroll lock belong to the closed → open transition only.
 	useEffect(() => {
 		if (!open) return;
 		const prev = document.body.style.overflow;
@@ -323,15 +322,18 @@ export function Modal({ open, onClose, title, subtitle, children, footer, wide, 
 		const opener = document.activeElement;
 		const field = ref.current?.querySelector("input:not([type=hidden]),select,textarea");
 		(field ?? ref.current)?.focus();
+		return () => {
+			document.body.style.overflow = prev;
+			opener?.focus?.();
+		};
+	}, [open]);
+	useEffect(() => {
+		if (!open) return;
 		const onKey = (e) => {
 			if (e.key === "Escape") requestClose();
 		};
 		document.addEventListener("keydown", onKey);
-		return () => {
-			document.removeEventListener("keydown", onKey);
-			document.body.style.overflow = prev;
-			opener?.focus?.();
-		};
+		return () => document.removeEventListener("keydown", onKey);
 	}, [open, requestClose]);
 
 	const Body = onSubmit ? "form" : "div";
