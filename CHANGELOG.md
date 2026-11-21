@@ -10,6 +10,11 @@ and the file disagree (`v2.0.1` ↔ `"version": "2.0.1"`).
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-11-22
+
+### Changed
+- Dependencies updated (majors kept only where the tests passed), Docker image on oven/bun 1.4.5, Biome as the linter, and the shared ez favicon.
+
 ## [2.0.1] - 2026-10-27
 
 Uploads returned 500 for eight days. This release is the fix, the hardening that
