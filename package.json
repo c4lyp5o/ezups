@@ -22,6 +22,6 @@
 		"elysia": "^1.4.32"
 	},
 	"devDependencies": {
-		"concurrently": "^9.2.5"
+		"concurrently": "^10.0.7"
 	}
 }
