@@ -12,7 +12,9 @@
 		"dev": "conc \"bun dev-client\" \"bun dev-server\"",
 		"build-client": "cd client && bun run build",
 		"start": "NODE_ENV=production bun server.js",
-		"test": "bun test --isolate"
+		"test": "bun test --isolate",
+		"lint": "biome lint .",
+		"lint:fix": "biome lint --write ."
 	},
 	"author": "c4lyp5o",
 	"license": "MIT",
@@ -22,6 +24,7 @@
 		"elysia": "^1.4.32"
 	},
 	"devDependencies": {
-		"concurrently": "^10.0.7"
+		"concurrently": "^10.0.7",
+		"@biomejs/biome": "2.6.8"
 	}
 }
