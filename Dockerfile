@@ -1,5 +1,5 @@
 # Stage 1: Build the client (Vite -> ../public, the path Elysia serves)
-FROM oven/bun:1.4.2-alpine AS builder
+FROM oven/bun:1.4.5-alpine AS builder
 ARG APP_BRANCH=development
 ENV APP_BRANCH=$APP_BRANCH
 
@@ -15,7 +15,7 @@ WORKDIR /app/client
 RUN bun install && bun run build
 
 # Stage 2: Production runtime
-FROM oven/bun:1.4.2-alpine
+FROM oven/bun:1.4.5-alpine
 
 # Version reported by the image itself. Without this the label is inherited from
 # oven/bun and `docker inspect` claims the base image's version (1.4.2-alpine)

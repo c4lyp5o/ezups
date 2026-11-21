@@ -47,8 +47,7 @@ jobs:
       - name: 🧪 Tests
         run: bun test --isolate
 
-      - name: 🧹 Lint client
-        working-directory: client
+      - name: 🧹 Lint (Biome)
         run: bun run lint
 
       - name: 🌐 Build client

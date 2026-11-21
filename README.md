@@ -97,3 +97,7 @@ MIT License.
 ---
 
 Created with Bun, React, and love.
+
+## Development
+
+Setup, commands, tests, linting and the `development` → `master` release flow are in [DEVELOPER.md](DEVELOPER.md). Changes are listed in [CHANGELOG.md](CHANGELOG.md).
