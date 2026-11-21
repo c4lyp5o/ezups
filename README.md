@@ -1,6 +1,6 @@
 # EZ-UPS
 
-**v2.0.1** · [changelog](CHANGELOG.md)
+**v2.0.2** · [changelog](CHANGELOG.md)
 
 In the name of Allah, the most merciful, the most gracious
 
