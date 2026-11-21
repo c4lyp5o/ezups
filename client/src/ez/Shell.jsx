@@ -15,25 +15,24 @@ import {
 } from "./motion";
 import { ThemeToggle } from "./theme";
 
-/** The app mark: a 22px rounded square in the ground colour with the accent glyph. */
-export function Mark({ glyph = "ez", className }) {
+/** The app mark: the shared ez icon (the favicon file) at 20px, as in ezllm. */
+export function Mark({ size = 20, className }) {
 	return (
-		<span
-			aria-hidden
-			className={cx(
-				"inline-grid h-[22px] w-[22px] flex-none place-items-center rounded-[6px] border border-line-strong bg-surface text-[10px] font-semibold tracking-tight text-accent",
-				className,
-			)}
-		>
-			{glyph}
-		</span>
+		<img
+			src="/icons/icon-192.png"
+			alt=""
+			width={size}
+			height={size}
+			className={cx("flex-none rounded-[4px]", className)}
+		/>
 	);
 }
 
-export function Brand({ name, glyph, scope }) {
+/** The brand row every ez app uses: ez icon, lowercase name, optional scope. */
+export function Brand({ name, scope, size }) {
 	return (
 		<div className="flex min-w-0 items-center gap-2.5">
-			<Mark glyph={glyph} />
+			<Mark size={size} />
 			<span className="text-[15px] font-semibold tracking-[-0.01em] text-ink">{name}</span>
 			{scope && (
 				<span className="truncate border-l border-line-strong pl-3 text-[12px] text-mute">
@@ -156,7 +155,7 @@ function SidebarContent({ brand, nav, active, onNavigate, footer, renderLink }) 
 }
 
 /**
- * <Shell brand={<Brand name="ezconv" glyph="cv" />} nav={[...]} active="home"
+ * <Shell brand={<Brand name="ezconv" />} nav={[...]} active="home"
  *        title="Convert" sub="…" aside={…} screenKey={route}>…</Shell>
  * Without `nav`, renders a single-column topbar layout (ezdyndns style).
  */

@@ -10,6 +10,9 @@ and the file disagree (`v2.0.1` ↔ `"version": "2.0.1"`).
 
 ## [Unreleased]
 
+### Changed
+- Header, sidebar and sign-in use the shared ez `Brand`: the ez icon and the lowercase name.
+
 ## [2.0.2] - 2026-11-22
 
 ### Changed
