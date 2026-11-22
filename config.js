@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import pkg from "./package.json";
+import { dataDir, keepLegacy } from "./utils/datadir.js";
 
 // import.meta.dir is Bun-only; derive it portably so tests can import too.
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -12,8 +13,15 @@ export const VERSION = pkg.version;
 // All runtime paths are rooted at the ezups repo root (./config.js lives there
 // in this repo, so HERE is already the repo root).
 export const PORT = process.env.PORT !== undefined ? Number(process.env.PORT) : 5000;
-export const DB_PATH = process.env.DB_PATH || path.join(HERE, "db/ezups.sqlite");
-export const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(HERE, "uploads");
+// All state (database, uploads, logs) lives under DATA_DIR (ez standard).
+// State at the pre-2.1 locations (db/, uploads/) keeps being used until moved.
+export const DATA_DIR = dataDir(HERE);
+export const DB_PATH =
+	process.env.DB_PATH ||
+	keepLegacy(path.join(DATA_DIR, "ezups.sqlite"), [path.join(HERE, "db/ezups.sqlite")]);
+export const UPLOADS_DIR =
+	process.env.UPLOADS_DIR ||
+	keepLegacy(path.join(DATA_DIR, "uploads"), [path.join(HERE, "uploads")], { dir: true });
 export const PUBLIC_DIR = path.join(HERE, "public");
 
 // Keys are lowercase hex strings; 3 bytes = 24 bits. Matches the original EZ-UPS

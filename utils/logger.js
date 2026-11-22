@@ -1,18 +1,9 @@
-import { mkdirSync } from "node:fs";
 import path from "node:path";
-import deadslog from "deadslog";
+import { DATA_DIR } from "../config.js";
+import { createLogger } from "./ezlog.js";
 
-// The log file lives next to the app, and git does not track empty
-// directories: a fresh clone or a build that skipped the local logs/ would
-// otherwise have deadslog fail on its first write.
-export const LOG_DIR = process.env.LOG_DIR || "./logs";
-mkdirSync(path.resolve(LOG_DIR), { recursive: true });
+export const LOG_DIR = process.env.LOG_DIR || path.join(DATA_DIR, "logs");
 
-const logger = deadslog({
-	fileOutput: {
-		enabled: true,
-		logFilePath: path.join(LOG_DIR, "ezups.log"),
-	},
-});
+const logger = createLogger(LOG_DIR, "ezups");
 
 export default logger;

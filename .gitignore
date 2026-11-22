@@ -33,3 +33,9 @@ db/*.sqlite-*
 logs/*.log
 # release bundle output
 /dist
+
+# release files built by scripts/release-assets.sh
+/release-assets/
+
+# runtime state (DATA_DIR default when run from source)
+/data/

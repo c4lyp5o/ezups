@@ -10,6 +10,27 @@ and the file disagree (`v2.0.1` ↔ `"version": "2.0.1"`).
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-22
+
+### Upgrading
+Everything now lives in one folder, `/data` (`DATA_DIR`): `ezups.sqlite`, `uploads/` and `logs/`.
+
+1. Stop the container.
+2. In your data folder, move `db/ezups.sqlite` (with any `-wal`/`-shm` files) up one level; `uploads/` stays where it is.
+3. Mount the folder as `- ./ezups-data:/data` instead of the two old volumes, and start it.
+
+If you skip this, the app keeps using the old locations and logs a warning, so nothing is lost.
+
+### Changed
+- Logs go to the console (`docker logs`) and to rotating files in `$DATA_DIR/logs` (`ezups.log`): 5 MB per file, 3 files kept. Each process writes its own file.
+- All state lives under one folder, `DATA_DIR` (`/data` in the image, `data/` when run from source), declared as a Docker volume. See **Upgrading**.
+- The Docker image follows the ez standard: Alpine, runs as the unprivileged `bun` user (uid 1000), and a `HEALTHCHECK` that reports healthy within seconds of start.
+- CI is two workflows, `test.yml` and `publish.yml`. Merging to `master` publishes `:<version>`, `:latest` and `:sha-<commit>` after the tests (and an image boot check) pass; a `vX.Y.Z` tag is optional and adds a GitHub Release.
+- Every push to `development` publishes `:development` and `:sha-<commit>` after the tests, so unreleased changes can be tried without touching `master`.
+- The retention sweep runs inside the app, daily at 01:00, instead of a root cron (the duplicate 02:00 run is gone), so the container no longer runs as root. Docker installs use the frozen lockfile.
+- Header, sidebar and sign-in use the shared ez `Brand`: the ez icon and the lowercase name.
+- Dependencies updated (majors kept only where the tests passed), Docker image on oven/bun 1.4.5, Biome as the linter, and the shared ez favicon.
+
 ## [2.0.1] - 2026-10-27
 
 Uploads returned 500 for eight days. This release is the fix, the hardening that
