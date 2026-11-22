@@ -40,7 +40,7 @@ docker run -d -p <desired host port>:5000 --name ezups \
   ezups:latest
 ```
 
-A container-level cron runs the retention sweep daily at 01:00 (container time).
+The app runs the retention sweep itself, daily at 01:00 (container time).
 `GET /api/v1/healthcheck` pings SQLite, so a corrupt or unwritable database
 reports the container as unhealthy instead of silently 500ing every upload.
 

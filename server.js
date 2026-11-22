@@ -5,6 +5,8 @@ import staticPlugin from "@elysiajs/static";
 import { PORT, PUBLIC_DIR, UPLOADS_DIR } from "./config.js";
 import logger from "./utils/logger.js";
 import { HttpRoutes } from "./routes/httpRoutes.js";
+import { sweepExpired } from "./controllers/httpControllers.js";
+import { schedule } from "./utils/schedule.js";
 
 // The static plugin errors on a missing assets dir; make sure the runtime
 // dirs exist even before the client has been built (dev mode, fresh checkout).
@@ -79,3 +81,6 @@ export const app = new Elysia()
 app.listen(PORT, () => {
 	logger.info(`[app] ezups is running on port ${PORT}`);
 });
+
+// Daily retention sweep at 01:00 (was a root crontab in the image).
+schedule({ hour: 1, name: "sweep", job: () => sweepExpired({ query: {} }), log: logger });
