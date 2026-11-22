@@ -1,6 +1,6 @@
 # EZ-UPS
 
-**v2.0.2** · [changelog](CHANGELOG.md)
+**v2.1.0** · [changelog](CHANGELOG.md)
 
 In the name of Allah, the most merciful, the most gracious
 
@@ -27,15 +27,14 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Running as a Docker Container
 
 A Dockerfile is included. The database is created automatically on first run.
-**Keep `/app/db` and `/app/uploads` on volumes** — they are the only copy of the
-database and of every uploaded file, so recreating the container without them
+**Keep `/data` on a volume** — it holds the only copy of the database
+(`ezups.sqlite`) and of every uploaded file (`uploads/`), so recreating the container without them
 loses every share link.
 
 ```bash
 docker build . -t ezups
 docker run -d -p <desired host port>:5000 --name ezups \
-  -v "$PWD/ezups-data/db:/app/db" \
-  -v "$PWD/ezups-data/uploads:/app/uploads" \
+  -v "$PWD/ezups-data:/data" \
   -e PURGE_MAX_AGE_DAYS=7 \
   ezups:latest
 ```
@@ -60,11 +59,12 @@ the only copy of the old rows, and they can be carved by hand (see
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `PORT` | `5000` | HTTP port |
-| `DB_PATH` | `./db/ezups.sqlite` | SQLite file (WAL) |
-| `UPLOADS_DIR` | `./uploads` | Uploaded files |
+| `DATA_DIR` | `./data` (`/data` in the image) | Where all state lives |
+| `DB_PATH` | `$DATA_DIR/ezups.sqlite` | SQLite file (WAL) |
+| `UPLOADS_DIR` | `$DATA_DIR/uploads` | Uploaded files |
 | `PURGE_MAX_AGE_DAYS` | `7` | Daily sweep deletes uploads older than this. `0` = keep forever |
 | `MAX_UPLOAD_SIZE` | `104857600` | Per-file cap in bytes (100MB) |
-| `LOG_DIR` | `./logs` | Directory for `ezups.log` |
+| `LOG_DIR` | `$DATA_DIR/logs` | Directory for `ezups.log` |
 | `DB_AUTO_RECOVER` | `1` | `0` = exit on a corrupt DB instead of quarantining it and creating a fresh one |
 | `DB_MAX_RECOVERIES` | `3` | Recoveries per process before giving up |
 | `DB_KEEP_QUARANTINES` | `3` | Quarantined `*.corrupt-*` files kept on disk |
