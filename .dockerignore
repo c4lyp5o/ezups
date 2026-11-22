@@ -13,3 +13,12 @@ Dockerfile
 LICENSE
 README.md
 Jenkinsfile
+
+# ez standard
+.github
+**/node_modules
+**/.env
+**/.env.*
+!**/.env.example
+**/*.log
+coverage

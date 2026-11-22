@@ -13,6 +13,9 @@ and the file disagree (`v2.0.1` ↔ `"version": "2.0.1"`).
 ## [2.0.2] - 2026-11-22
 
 ### Changed
+- The Docker image follows the ez standard: Alpine, runs as the unprivileged `bun` user (uid 1000), and a `HEALTHCHECK` that reports healthy within seconds of start.
+- CI is two workflows, `test.yml` and `publish.yml`. Merging to `master` publishes `:<version>`, `:latest` and `:sha-<commit>` after the tests (and an image boot check) pass; a `vX.Y.Z` tag is optional and adds a GitHub Release.
+- The retention sweep runs inside the app, daily at 01:00, instead of a root cron (the duplicate 02:00 run is gone), so the container no longer runs as root. Docker installs use the frozen lockfile.
 - Header, sidebar and sign-in use the shared ez `Brand`: the ez icon and the lowercase name.
 - Dependencies updated (majors kept only where the tests passed), Docker image on oven/bun 1.4.5, Biome as the linter, and the shared ez favicon.
 
